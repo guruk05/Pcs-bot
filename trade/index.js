@@ -1,25 +1,32 @@
 import ethers from "ethers";
+import Web3 from "web3";
 import chalk from "chalk";
 
 import transformEnv from "../transformEnv.js";
 import initializeExchange from "../exchanges/index.js";
 import checkLiqAdd from "../events/liqAdd.js";
 import honeyPotCheck from "../protection/honeypotCheck.js";
+import buyEnabledCheck from "../protection/buyEnabledCheck.js";
 import buy from "./buy.js";
 import approve from "./approve.js";
 import bookProfit from "./bookProfit.js";
 import sell from "./sell.js";
 
 const envs = transformEnv();
-const { mnemonic, wss, checkHoneyPot } = envs;
+const { mnemonic, wss, checkHoneyPot, exitIfError, checkIfBuyEnabled } = envs;
 
 const provider = new ethers.providers.WebSocketProvider(wss);
 const wallet = new ethers.Wallet(mnemonic);
 const account = wallet.connect(provider);
 
+//W3 Provider
+const w3Provider = new Web3(new Web3.providers.WebsocketProvider(wss)); // WSS
+const web3 = new Web3(w3Provider);
+
 const exchanges = initializeExchange({
   account,
   envs,
+  web3,
 });
 
 const globalObj = {
@@ -48,11 +55,29 @@ const handleHoneyPotCheck = async () => {
   //Buy once liq is added
   if (globalObj.isLiqAdded && !globalObj.isTokenBought) {
     //Ready to buy the token
-    const { isTokenHoneyPot } = await honeyPotCheck({
+    const { isTokenHoneyPot, error } = await honeyPotCheck({
       envs,
       exchanges,
     });
+    if (error && exitIfError === "true") {
+      process.exit();
+    }
     globalObj.honeyPotCheck = isTokenHoneyPot;
+  }
+};
+
+const handleBuyEnabledCheck = async () => {
+  //Buy once liq is added
+  if (globalObj.isLiqAdded && !globalObj.isTokenBought) {
+    //Ready to buy the token
+    const { isBuyEnabled, error } = await buyEnabledCheck({
+      envs,
+      exchanges,
+    });
+    if (error && exitIfError === "true") {
+      process.exit();
+    }
+    globalObj.isBuyEnabled = isBuyEnabled;
   }
 };
 
@@ -112,12 +137,18 @@ const tradeHandler = async () => {
     // console.log("🚀 ~ file: bot.js ~ line 52 ~ globalObj", globalObj);
 
     if (checkHoneyPot === "true") {
-      console.log(chalk.red(`----------------------------------------`));
       await handleHoneyPotCheck();
       if (globalObj.isTokenHoneyPot) {
         process.exit();
       }
-      console.log(chalk.red(`----------------------------------------`));
+    }
+
+    if (checkIfBuyEnabled === "true") {
+      console.log(chalk.green(`\nProcessing buy enabled check.....`));
+      do {
+        await handleBuyEnabledCheck();
+      } while (!globalObj.isBuyEnabled);
+      console.log(chalk.green(`\nBuy Enabled.....`));
     }
 
     await handleBuy();
@@ -127,6 +158,7 @@ const tradeHandler = async () => {
     // console.log("🚀 ~ file: bot.js ~ line 52 ~ globalObj", globalObj);
 
     //Listening for token price changes to book profit
+    console.log(chalk.green.inverse(`\nProcessing profit booking.....`));
     do {
       await handleProfitBooking();
     } while (!globalObj.isProfitBooked);

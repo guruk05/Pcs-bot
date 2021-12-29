@@ -29,7 +29,10 @@ const transformEnv = () => {
 
     profitXamount: config.PROFIT_X_AMOUNT,
 
+    checkIfBuyEnabled: config.BUY_ENABLE_CHECK,
+
     honeyPotCheckerAddress: config.HONEYPOT_CHECKER,
+    exitIfError: config.EXIT_IF_ERROR,
 
     maxBuyTax: config.MAX_BUY_TAX,
     maxSellTax: config.MAX_SELL_TAX,

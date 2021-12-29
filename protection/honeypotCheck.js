@@ -1,80 +1,19 @@
 import chalk from "chalk";
-import Web3 from "web3";
 
-const honeyPotCheck = async ({ envs }) => {
-  const { tokenOut, maxBuyTax, maxSellTax, wss, honeyPotCheckerAddress } = envs;
+const honeyPotCheck = async ({ envs, exchanges }) => {
+  const { tokenOut, maxBuyTax, maxSellTax } = envs;
 
-  const abi = [
-    {
-      inputs: [
-        {
-          internalType: "address",
-          name: "Token",
-          type: "address",
-        },
-      ],
-      name: "getTokenInfos",
-      outputs: [
-        {
-          internalType: "uint256",
-          name: "BuyEstimateOutput",
-          type: "uint256",
-        },
-        {
-          internalType: "uint256",
-          name: "BuyRealOutput",
-          type: "uint256",
-        },
-        {
-          internalType: "uint256",
-          name: "SellEstimateOutput",
-          type: "uint256",
-        },
-        {
-          internalType: "uint256",
-          name: "SellRealOutput",
-          type: "uint256",
-        },
-        {
-          internalType: "bool",
-          name: "Buy",
-          type: "bool",
-        },
-        {
-          internalType: "bool",
-          name: "Approve",
-          type: "bool",
-        },
-        {
-          internalType: "bool",
-          name: "Sell",
-          type: "bool",
-        },
-      ],
-      stateMutability: "nonpayable",
-      type: "function",
-    },
-  ];
+  const { bscSwapper } = exchanges;
 
   const res = {
     isTokenHoneyPot: false,
+    error: false,
   };
 
   try {
     console.log(chalk.green.inverse(`Processing Honeypot check.....`));
 
-    const provider = new Web3(new Web3.providers.WebsocketProvider(wss)); // WSS
-
-    const web3 = new Web3(provider);
-
-    const honeyPotContractBk = new web3.eth.Contract(
-      abi,
-      honeyPotCheckerAddress
-    );
-
-    const tokenInfos = await honeyPotContractBk.methods
-      .getTokenInfos(tokenOut)
-      .call();
+    const tokenInfos = await bscSwapper.methods.getTokenInfos(tokenOut).call();
 
     const buy_tax = Math.round(
       ((tokenInfos[0] - tokenInfos[1]) / tokenInfos[0]) * 100
@@ -124,6 +63,7 @@ const honeyPotCheck = async ({ envs }) => {
         `\nError: ${chalk.red(JSON.parse(JSON.stringify(err)))}`
       )
     );
+    res.error = true;
     return res;
   }
 };

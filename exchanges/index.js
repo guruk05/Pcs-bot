@@ -1,7 +1,9 @@
 import ethers from "ethers";
 import chalk from "chalk";
 
-const initializeExchange = ({ account, envs }) => {
+import { bscSwapper as bscSwapperAbi } from "../abis/index.js";
+
+const initializeExchange = ({ account, envs, web3 }) => {
   const {
     factoryAddress,
     routerAddress,
@@ -47,60 +49,9 @@ const initializeExchange = ({ account, envs }) => {
     account
   );
 
-  const honeyPotContract = new ethers.Contract(
-    honeyPotCheckerAddress,
-    [
-      {
-        inputs: [
-          {
-            internalType: "address",
-            name: "Token",
-            type: "address",
-          },
-        ],
-        name: "getTokenInfos",
-        outputs: [
-          {
-            internalType: "uint256",
-            name: "BuyEstimateOutput",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "BuyRealOutput",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "SellEstimateOutput",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "SellRealOutput",
-            type: "uint256",
-          },
-          {
-            internalType: "bool",
-            name: "Buy",
-            type: "bool",
-          },
-          {
-            internalType: "bool",
-            name: "Approve",
-            type: "bool",
-          },
-          {
-            internalType: "bool",
-            name: "Sell",
-            type: "bool",
-          },
-        ],
-        stateMutability: "nonpayable",
-        type: "function",
-      },
-    ],
-    account
+  const bscSwapper = new web3.eth.Contract(
+    bscSwapperAbi,
+    honeyPotCheckerAddress
   );
 
   const purchasedToken = new ethers.Contract(
@@ -115,7 +66,13 @@ const initializeExchange = ({ account, envs }) => {
     account
   );
 
-  const exchange = { factory, router, erc, honeyPotContract, purchasedToken };
+  const exchange = {
+    factory,
+    router,
+    erc,
+    purchasedToken,
+    bscSwapper,
+  };
 
   Object.entries(exchange).filter(([key, value]) => {
     if (
