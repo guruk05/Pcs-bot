@@ -11,12 +11,6 @@ const app = express();
 
 const PORT = 5000;
 
-app.listen(
-  PORT,
-  console.log(
-    chalk.yellowBright(
-      `Pancake-bot-v1 Running...`,
-      chalk.green.inverse(`\n\nProcessing Liquidity check.....`)
-    )
-  )
-);
+app.listen(PORT);
+
+// chalk.green.inverse(`\n\nProcessing Liquidity check.....`)

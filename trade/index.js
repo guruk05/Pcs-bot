@@ -1,8 +1,5 @@
-import ethers from "ethers";
-import Web3 from "web3";
 import chalk from "chalk";
 
-import transformEnv from "../transformEnv.js";
 import initializeExchange from "../exchanges/index.js";
 import checkLiqAdd from "../events/liqAdd.js";
 import honeyPotCheck from "../protection/honeypotCheck.js";
@@ -11,17 +8,19 @@ import buy from "./buy.js";
 import approve from "./approve.js";
 import bookProfit from "./bookProfit.js";
 import sell from "./sell.js";
+import {
+  connectToChain,
+  getEnv,
+  sleep,
+  inquirerPrompt,
+  getLocalTimeStamp,
+} from "../utils/index.js";
+import { config } from "dotenv";
 
-const envs = transformEnv();
-const { mnemonic, wss, checkHoneyPot, exitIfError, checkIfBuyEnabled } = envs;
+const envs = getEnv();
+const { checkHoneyPot, exitIfError, checkIfBuyEnabled } = envs;
 
-const provider = new ethers.providers.WebSocketProvider(wss);
-const wallet = new ethers.Wallet(mnemonic);
-const account = wallet.connect(provider);
-
-//W3 Provider
-const w3Provider = new Web3(new Web3.providers.WebsocketProvider(wss)); // WSS
-const web3 = new Web3(w3Provider);
+const { web3, account } = connectToChain();
 
 const exchanges = initializeExchange({
   account,
@@ -42,12 +41,13 @@ const globalObj = {
 const handleLiqEvent = async () => {
   //Listening for liquidity addition
   if (!globalObj.isLiqAdded) {
-    const { isLiqAdded, isLiqGteMinExpectedLiq } = await checkLiqAdd({
+    const { isLiqAdded, isLiqGteMinExpectedLiq, totalLiq } = await checkLiqAdd({
       envs,
       exchanges,
     });
     globalObj.isLiqAdded = isLiqAdded;
     globalObj.isLiqGteMinExpectedLiq = isLiqGteMinExpectedLiq;
+    globalObj.totalLiq = totalLiq;
   }
 };
 
@@ -131,10 +131,68 @@ const handleSell = async () => {
 
 const tradeHandler = async () => {
   try {
+    console.log(
+      chalk.yellow(
+        `============ NICK BOT VERSION BETA v1.0.0.1000 ============`
+      )
+    );
+
+    await sleep(3000);
+
+    console.log(chalk.whiteBright("\nBot connected to Pancakeswap - BSC"));
+    console.log(chalk.whiteBright(`Wallet - ${account.address}`));
+
+    console.log(chalk.whiteBright(`\nBot config for current snipe : `));
+    console.log(chalk.whiteBright(`\--------------------------------`));
+    console.log(chalk.whiteBright(`\nChain - ${`BSC-Pancakeswap`}`));
+    console.log(chalk.whiteBright(`Address - ${account.address}`));
+    console.log(
+      chalk.whiteBright(`Token to snipe - ${envs.purchaseTokenAddress}`)
+    );
+    console.log(
+      chalk.whiteBright(`Amount for purchase - ${envs.AMOUNT_OF_BNB}`)
+    );
+    console.log(chalk.whiteBright(`Slippage - ${envs.Slippage}`));
+    console.log(chalk.whiteBright(`Min Liq - ${envs.minBnb}`));
+    console.log(chalk.whiteBright(`Buy | Sell GWEI - ${envs.gasPrice}`));
+    console.log(chalk.whiteBright(`Buy | Sell GASLIMIT - ${envs.gasLimit}`));
+    console.log(
+      chalk.whiteBright(`Buy check enabled - ${envs.checkIfBuyEnabled}`)
+    );
+    console.log(chalk.whiteBright(`Max Buy Tax - ${envs.maxSellTax}`));
+    console.log(chalk.whiteBright(`Max Sell Tax - ${envs.maxSellTax}`));
+    console.log(
+      chalk.whiteBright(
+        `HoneyPot checker address - ${envs.honeyPotCheckerAddress}`
+      )
+    );
+    console.log(chalk.whiteBright(`Check HoneyPot - ${envs.checkHoneyPot}`));
+    console.log(chalk.whiteBright(`Exit If Error - ${envs.exitIfError}\n`));
+
+    const { startSnipe } = await inquirerPrompt();
+
+    if (!startSnipe) {
+      console.log(chalk.red(`\nUpdate bot config & Restart the bot again...`));
+      process.exit();
+    }
+
+    console.log(chalk.whiteBright("\nStarting..."));
+    console.log(chalk.whiteBright(`---------------`));
+
+    console.log(
+      chalk.whiteBright(`\n${getLocalTimeStamp()} | Scanning new block`)
+    );
+
     do {
       await handleLiqEvent();
     } while (!globalObj.isLiqAdded || !globalObj.isLiqGteMinExpectedLiq);
     // console.log("🚀 ~ file: bot.js ~ line 52 ~ globalObj", globalObj);
+
+    console.log(
+      chalk.green(
+        `\n${getLocalTimeStamp()} | Liquidity found!! -- ${globalObj.totalLiq}`
+      )
+    );
 
     if (checkHoneyPot === "true") {
       await handleHoneyPotCheck();
@@ -147,8 +205,8 @@ const tradeHandler = async () => {
       console.log(chalk.green(`\nProcessing buy enabled check.....`));
       do {
         await handleBuyEnabledCheck();
-      } while (!globalObj.isBuyEnabled);
-      console.log(chalk.green(`\nBuy Enabled.....`));
+      } while (!globalObj.isBuyEnabled && globalObj.exitIfError === "false");
+      globalObj.isBuyEnabled && console.log(chalk.green(`\nBuy Enabled.....`));
     }
 
     await handleBuy();
@@ -170,12 +228,6 @@ const tradeHandler = async () => {
     return;
   } catch (err) {
     const error = JSON.parse(JSON.stringify(err));
-    console.log(`Error caused by : 
-          {
-          reason : ${error.reason},
-          transactionHash : ${error.transactionHash}
-          message : ${error}
-          }`);
     console.log(error);
   }
 };

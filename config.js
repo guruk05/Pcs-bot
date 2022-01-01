@@ -15,6 +15,6 @@ if (result.error) {
   throw result.error;
 }
 const { parsed: envs } = result;
-console.log("EnvPath --- " + envPath);
+// console.log("EnvPath --- " + envPath);
 
 export default envs;

@@ -51,8 +51,7 @@ const bookProfit = async ({ envs, exchanges }) => {
       return { isProfitBooked: false };
     }
   } catch (err) {
-    const error = JSON.parse(JSON.stringify(err));
-    console.log(chalk.red(error));
+    throw err;
   }
 };
 

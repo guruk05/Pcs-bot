@@ -67,8 +67,7 @@ const buy = async ({ envs, exchanges }) => {
 
     return { isTokenBought: true };
   } catch (err) {
-    const error = JSON.parse(JSON.stringify(err));
-    console.log(chalk.red(error));
+    throw err;
   }
 };
 

@@ -1,5 +1,16 @@
 import ethers from "ethers";
 import chalk from "chalk";
+import { Spinner } from "cli-spinner";
+
+import { loader } from "../utils/index.js";
+
+let isConsolePrinted = false;
+let prevTotalLiq = 0;
+
+const spinner = new Spinner(
+  chalk.whiteBright(`Rerunning liquidity check... %s`)
+);
+spinner.setSpinnerString("|/-\\");
 
 const checkLiqAdd = async ({ envs, exchanges }) => {
   const { tokenIn, tokenOut, minBnb } = envs;
@@ -11,47 +22,50 @@ const checkLiqAdd = async ({ envs, exchanges }) => {
     const pairAddressx = await factory.getPair(tokenIn, tokenOut);
     if (pairAddressx) {
       if (pairAddressx.toString().indexOf("0x0000000000000") > -1) {
-        console.log(chalk.cyan(`\nPair not detected. Auto restart`));
         return { isLiqAdded: false, isLiqGteMinExpectedLiq: false };
       }
     }
 
-    console.log(
-      chalk.cyan(
-        `\npair exists`,
-        `\npairAddress: ${pairAddressx}`,
-        `\nListening for liquidity addition of pair: ${pairAddressx}`
-      )
-    );
-
     const pairBNBvalue = await erc.balanceOf(pairAddressx);
     jmlBnb = await ethers.utils.formatEther(pairBNBvalue);
 
-    console.log(
-      chalk.cyan(
-        `\nPair liquidity value in : ${jmlBnb}`,
-        `\nValidating liquidity...`
-      )
-    );
+    if (jmlBnb !== prevTotalLiq) {
+      console.log(
+        "🚀 ~ file: liqAdd.js ~ line 33 ~ checkLiqAdd ~ prevTotalLiq",
+        prevTotalLiq
+      );
+      clearInterval(loader);
+      isConsolePrinted = false;
+    }
+
+    prevTotalLiq = jmlBnb;
 
     if (parseFloat(jmlBnb) > parseFloat(minBnb)) {
-      console.log(
-        chalk.yellowBright(`\nLiquidity validation successfull : ${jmlBnb}`)
-      );
-      return { isLiqAdded: true, isLiqGteMinExpectedLiq: true };
+      spinner.stop();
+      return {
+        isLiqAdded: true,
+        isLiqGteMinExpectedLiq: true,
+        totalLiq: jmlBnb,
+      };
     } else {
-      console.log(
-        chalk.redBright(
-          `\nPair Liquidity did not meet min threshold : ${jmlBnb}`,
-          `\nRerunning liquidity check`
-        )
-      );
+      if (!isConsolePrinted) {
+        console.log(
+          chalk.redBright(
+            `\nPair Liquidity did not meet min threshold | Current Liq : ${jmlBnb}`
+          )
+        );
+        spinner.start();
+        isConsolePrinted = true;
+      }
 
-      return { isLiqAdded: false, isLiqGteMinExpectedLiq: false };
+      return {
+        isLiqAdded: false,
+        isLiqGteMinExpectedLiq: false,
+        totalLiq: jmlBnb,
+      };
     }
   } catch (err) {
-    let error = JSON.parse(JSON.stringify(err));
-    console.log(chalk.red(error));
+    throw err;
   }
 };
 
