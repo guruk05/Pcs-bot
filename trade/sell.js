@@ -1,7 +1,8 @@
 import chalk from "chalk";
 import ethers from "ethers";
+import { getLocalTimeStamp } from "../utils/index.js";
 
-const sell = async ({ envs, exchanges }) => {
+const sell = async ({ envs, exchanges, latestBlockNumber }) => {
   const {
     tokenIn,
     tokenOut,
@@ -29,22 +30,10 @@ const sell = async ({ envs, exchanges }) => {
     const amountInMin = ethers.utils.formatUnits(amounts[1]);
 
     console.log(
-      chalk.green.inverse(`\nProcessing sell \n`) +
-        `Selling Token
-        =================
-        tokenOut: ${ethers.utils.formatUnits(bal)} ${tokenOut}
-        tokenIn: ${amountInMin.toString()} ${tokenIn} (BNB)
-      `
+      chalk.whiteBright(
+        `${getLocalTimeStamp()} | Block : ${latestBlockNumber} | Selling`
+      )
     );
-
-    console.log(chalk.yellow("Processing Sell Transaction....."));
-    console.log(chalk.yellow(`amountInMin: ${amountInMin} ${tokenIn} (BNB)`));
-    console.log(chalk.yellow(`amountsOutMin: ${amountsOutMin}`));
-    console.log(chalk.yellow(`tokenOut: ${tokenOut}`));
-    console.log(chalk.yellow(`tokenIn: ${tokenIn}`));
-    console.log(chalk.yellow(`recipient: ${recipient}`));
-    console.log(chalk.yellow(`gasLimit: ${gasLimit}`));
-    console.log(chalk.yellow(`gasPrice: ${gasPrice} \n`));
 
     // const tx = await router.swapExactTokensForTokensSupportingFeeOnTransferTokens( //uncomment this if you want to buy deflationary token
     const tx = await router.swapExactTokensForETH(
@@ -62,15 +51,17 @@ const sell = async ({ envs, exchanges }) => {
     const receipt = await tx.wait();
 
     console.log(
-      chalk.yellow(
-        chalk.greenBright(`Successfully sold the token`),
-        `\nTransaction receipt : ${explorerUrl}/tx/${receipt.logs[1].transactionHash}`,
-        `\nBlocknumber: ${receipt.blockNumber} - ${explorerUrl}/block/${receipt.blockNumber}`,
-        `\nBlockhash: ${receipt.blockHash} - ${explorerUrl}/block/${receipt.blockHash}\n`
+      chalk.green(
+        `${getLocalTimeStamp()} | Block : ${
+          receipt.blockNumber
+        } | Sell successful!!`,
+        chalk.white(
+          `\nTransaction URL : ${explorerUrl}/tx/${receipt.logs[1].transactionHash}`
+        )
       )
     );
 
-    return { isTokenSold: true };
+    return { isTokenSold: true, latestBlockNumber: receipt.blockNumber };
   } catch (err) {
     throw err;
   }

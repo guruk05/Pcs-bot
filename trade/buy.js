@@ -1,6 +1,7 @@
 import chalk from "chalk";
+import { getLocalTimeStamp } from "../utils/index.js";
 
-const buy = async ({ envs, exchanges }) => {
+const buy = async ({ envs, exchanges, latestBlockNumber }) => {
   const {
     tokenIn,
     tokenOut,
@@ -23,22 +24,10 @@ const buy = async ({ envs, exchanges }) => {
     }
 
     console.log(
-      chalk.green.inverse(`Processing buy \n`) +
-        `Buying Token
-        =================
-        tokenIn: ${(amountIn * 1e-18).toString()} ${tokenIn} (BNB)
-        tokenOut: ${amountOutMin.toString()} ${tokenOut}
-      `
+      chalk.whiteBright(
+        `${getLocalTimeStamp()} | Block : ${latestBlockNumber} | Buying`
+      )
     );
-
-    console.log(chalk.yellow("Processing Buy Transaction....."));
-    console.log(chalk.yellow(`amountIn: ${amountIn * 1e-18} ${tokenIn} (BNB)`));
-    console.log(chalk.yellow(`amountOutMin: ${amountOutMin}`));
-    console.log(chalk.yellow(`tokenIn: ${tokenIn}`));
-    console.log(chalk.yellow(`tokenOut: ${tokenOut}`));
-    console.log(chalk.yellow(`recipient: ${recipient}`));
-    console.log(chalk.yellow(`gasLimit: ${gasLimit}`));
-    console.log(chalk.yellow(`gasPrice: ${gasPrice} \n`));
 
     // const tx = await router.swapExactTokensForTokensSupportingFeeOnTransferTokens( //uncomment this if you want to buy deflationary token
     const tx = await router.swapETHForExactTokens(
@@ -57,15 +46,17 @@ const buy = async ({ envs, exchanges }) => {
     const receipt = await tx.wait();
 
     console.log(
-      chalk.yellow(
-        chalk.greenBright(`Successfully bought the token`),
-        `\nTransaction receipt : ${explorerUrl}/tx/${receipt.logs[1].transactionHash}`,
-        `\nBlocknumber: ${receipt.blockNumber} - ${explorerUrl}/block/${receipt.blockNumber}`,
-        `\nBlockhash: ${receipt.blockHash} - ${explorerUrl}/block/${receipt.blockHash}`
+      chalk.green(
+        `${getLocalTimeStamp()} | Block : ${
+          receipt.blockNumber
+        } | Buy successful!!`,
+        chalk.white(
+          `\nTransaction URL : ${explorerUrl}/tx/${receipt.logs[1].transactionHash}`
+        )
       )
     );
 
-    return { isTokenBought: true };
+    return { isTokenBought: true, latestBlockNumber: receipt.blockNumber };
   } catch (err) {
     throw err;
   }

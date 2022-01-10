@@ -23,7 +23,7 @@ const connectToChain = () => {
     const w3Provider = new Web3(new Web3.providers.WebsocketProvider(wss)); // WSS
     const web3 = new Web3(w3Provider);
 
-    return { web3, account };
+    return { web3, account, provider };
   } catch (err) {
     console.log(chalk.red("\nBot unable to connect to Pancakeswap - BSC"));
     console.log(chalk.yellow("Please check....."));
@@ -52,30 +52,40 @@ const inquirerPrompt = async () => {
 };
 
 const getLocalTimeStamp = () => {
-  const dates = new Date();
-  const months = [
-    "01",
-    "02",
-    "03",
-    "04",
-    "05",
-    "06",
-    "07",
-    "08",
-    "09",
-    "10",
-    "11",
-    "12",
-  ];
-  const month = months[dates.getMonth()];
-  const year = dates.getFullYear();
-  const date = dates.getDate();
-  const hours = dates.getHours();
-  const minutes = dates.getMinutes();
-  const seconds = dates.getSeconds();
-  const milliSeconds = dates.getMilliseconds();
-  const timeStampWithSeconds = `${date}-${month}-${year} ${hours}:${minutes}:${seconds}:${milliSeconds}`;
-  return timeStampWithSeconds;
+  try {
+    const dates = new Date();
+    const months = [
+      "01",
+      "02",
+      "03",
+      "04",
+      "05",
+      "06",
+      "07",
+      "08",
+      "09",
+      "10",
+      "11",
+      "12",
+    ];
+    const month = months[dates.getMonth()];
+    const year = dates.getFullYear();
+    const date = dates.getDate();
+    const hours = dates.getHours();
+    const minutes = dates.getMinutes();
+    const seconds = dates.getSeconds();
+    const milliSeconds = dates.getMilliseconds();
+    const timeStampWithSeconds = `${String(date).padStart(2, "0")}-${String(
+      month
+    ).padStart(2, "0")}-${year} ${String(hours).padStart(2, "0")}:${String(
+      minutes
+    ).padStart(2, "0")}:${String(seconds).padStart(2, "0")}:${String(
+      milliSeconds
+    ).padStart(3, "0")}`;
+    return timeStampWithSeconds;
+  } catch (err) {
+    throw err;
+  }
 };
 
 const loader = () => {
@@ -90,6 +100,10 @@ const loader = () => {
   }, 300);
 };
 
+const getLatestBlock = async (provider) => {
+  return await provider.getBlockNumber();
+};
+
 export {
   connectToChain,
   getEnv,
@@ -97,4 +111,17 @@ export {
   inquirerPrompt,
   getLocalTimeStamp,
   loader,
+  getLatestBlock,
 };
+
+// -------------------------------------------------------------------------------------------------
+
+// GET RESERVES UTIL
+
+// const pairABI = [
+//   "function getReserves() public view returns (uint112 _reserve0, uint112 _reserve1, uint32 _blockTimestampLast)",
+// ];
+
+// let pairContract = new ethers.Contract(pairAddress, pairABI, provider);
+// console.log("🚀 ~ file: liqAdd.js ~ line 40 ~ checkLiqAdd ~ pairContract");
+// let reserves = await pairContract.getReserves();

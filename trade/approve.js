@@ -1,12 +1,17 @@
 import ethers from "ethers";
 import chalk from "chalk";
+import { getLocalTimeStamp } from "../utils/index.js";
 
-const approve = async ({ envs, exchanges }) => {
+const approve = async ({ envs, exchanges, latestBlockNumber }) => {
   const { tokenOut, routerAddress, explorerUrl } = envs;
   const { purchasedToken } = exchanges;
 
   try {
-    console.log(chalk.green.inverse(`\nProcessing Approval.....`));
+    console.log(
+      chalk.whiteBright(
+        `${getLocalTimeStamp()} | Block : ${latestBlockNumber} | Approving`
+      )
+    );
 
     const tx = await purchasedToken.approve(
       routerAddress,
@@ -19,14 +24,14 @@ const approve = async ({ envs, exchanges }) => {
     const receipt = await tx.wait();
 
     console.log(
-      chalk.magenta(
-        `${chalk.yellow(`Approved`)} ${tokenOut}`,
-        `\nToken Approval TxHash: ${receipt.transactionHash}`,
-        `\nApproved Transaction receipt : ${explorerUrl}/tx/${receipt.transactionHash}`
+      chalk.green(
+        `${getLocalTimeStamp()} | Block : ${
+          receipt.blockNumber
+        } | Approve successful!!`
       )
     );
 
-    return { isTokenApproved: true };
+    return { isTokenApproved: true, latestBlockNumber: receipt.blockNumber };
   } catch (err) {
     throw err;
   }

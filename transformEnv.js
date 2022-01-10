@@ -38,6 +38,10 @@ const transformEnv = () => {
     maxSellTax: config.MAX_SELL_TAX,
   };
 
+  transformedEnvs.chain = config.CHAIN;
+  transformedEnvs.network = config.NETWORK;
+  transformedEnvs.exchange = config.EXCHANGE;
+  transformedEnvs.isTokenApproved = config.TOKEN_APPROVED;
   transformedEnvs.wss = config.WSS_NODE;
   transformedEnvs.checkHoneyPot = config.CHECK_HONEYPOT;
   transformedEnvs.mnemonic = config.YOUR_MNEMONIC; //your privateKey;
