@@ -1,5 +1,3 @@
-import chalk from "chalk";
-
 const buyEnabledCheck = async ({ envs, exchanges }) => {
   const { tokenOut } = envs;
 
@@ -12,13 +10,12 @@ const buyEnabledCheck = async ({ envs, exchanges }) => {
 
   try {
     const tokenInfo = await bscSwapper.methods.getTokenInfos(tokenOut).call();
-
     res.isBuyEnabled = tokenInfo[4];
 
     return res;
   } catch (err) {
-    console.log(chalk.red(`\nBuy enabled check failed`));
     res.error = true;
+    res.errorMessage = err;
     return res;
   }
 };

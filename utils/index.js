@@ -104,6 +104,32 @@ const getLatestBlock = async (provider) => {
   return await provider.getBlockNumber();
 };
 
+const logExitIfErrorCases = (params) => {
+  const { error, envs } = params;
+  const { exitIfError } = envs;
+
+  if (error && exitIfError === "true") {
+    console.log(
+      chalk.yellow(`Exiting due to --> EXIT_IF_ERROR = ${exitIfError}`)
+    );
+    process.exit();
+  } else if (error && exitIfError === "false") {
+    console.log(
+      chalk.yellow(`Continuing due to --> EXIT_IF_ERROR = ${exitIfError}`)
+    );
+  }
+};
+
+const getTxDeadLine = () => {
+  const timeInHours = Date.now() + 1000 * 60;
+
+  return {
+    buy: timeInHours * 5,
+    sell: timeInHours * 5,
+    approve: timeInHours * 5,
+  };
+};
+
 export {
   connectToChain,
   getEnv,
@@ -112,6 +138,8 @@ export {
   getLocalTimeStamp,
   loader,
   getLatestBlock,
+  logExitIfErrorCases,
+  getTxDeadLine,
 };
 
 // -------------------------------------------------------------------------------------------------

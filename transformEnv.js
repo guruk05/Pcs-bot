@@ -36,11 +36,15 @@ const transformEnv = () => {
 
     maxBuyTax: config.MAX_BUY_TAX,
     maxSellTax: config.MAX_SELL_TAX,
+    cliViewObjs: {},
   };
+
+  transformedEnvs.cliViewObjs.gwei = config.GWEI;
 
   transformedEnvs.chain = config.CHAIN;
   transformedEnvs.network = config.NETWORK;
   transformedEnvs.exchange = config.EXCHANGE;
+  transformedEnvs.mode = config.MODE;
   transformedEnvs.isTokenApproved = config.TOKEN_APPROVED;
   transformedEnvs.wss = config.WSS_NODE;
   transformedEnvs.checkHoneyPot = config.CHECK_HONEYPOT;

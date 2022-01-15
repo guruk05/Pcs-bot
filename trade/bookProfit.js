@@ -1,61 +1,42 @@
 import ethers from "ethers";
-import chalk from "chalk";
-import { getLocalTimeStamp } from "../utils/index.js";
-import { Spinner } from "cli-spinner";
 
-let isConsolePrinted = false;
+const globalObj = {
+  isTokenBalFetched: false,
+  tokenBal: 0,
+};
 
-const spinner = new Spinner(
-  chalk.whiteBright(`Waiting for min liq... stop bot ? ctrl + c %s`)
-);
-spinner.setSpinnerString("|/-\\");
-
-const bookProfit = async ({ envs, exchanges, latestBlockNumber }) => {
+const bookProfit = async ({ envs, exchanges }) => {
   const { recipient, tokenIn, tokenOut, amountIn, profitXamount } = envs;
   const { router, purchasedToken } = exchanges;
 
   try {
-    const bal = await purchasedToken.balanceOf(recipient);
-    // console.log(
-    //   "🚀 ~ file: bookProfit.js ~ line 12 ~ bookProfit ~ bal",
-    //   ethers.utils.formatUnits(bal),
-    //   profitXamount
-    // );
+    if (!globalObj.isTokenBalFetched) {
+      globalObj.tokenBal = await purchasedToken.balanceOf(recipient);
+      globalObj.isTokenBalFetched = true;
+    }
 
-    const amount = await router.getAmountsOut(bal, [tokenOut, tokenIn]);
+    const amount = await router.getAmountsOut(globalObj.tokenBal, [
+      tokenOut,
+      tokenIn,
+    ]);
     const profitDesired = amountIn.mul(profitXamount);
     const currentValue = amount[1];
-    // console.log("🚀 ~ profitXamount", profitDesired);
 
     const formattedCurrentVal = ethers.utils.formatUnits(currentValue);
     const formattedDesiredProfit = ethers.utils.formatUnits(profitDesired);
 
-    if (!isConsolePrinted) {
-      console.log(
-        chalk.whiteBright(
-          `${getLocalTimeStamp()} | Block : ${latestBlockNumber} | Booking profit`
-        )
-      );
-    }
-
-    isConsolePrinted = true;
-
     if (currentValue.gte(profitDesired)) {
-      console.log(
-        chalk.green(
-          `${getLocalTimeStamp()} | Block : ${latestBlockNumber} | Current price : ${chalk.white(
-            formattedCurrentVal
-          )} | Profit Booked!!`
-        )
-      );
-      return { isProfitBooked: true };
+      return {
+        isProfitBooked: true,
+        currentValue: formattedCurrentVal,
+        profitDesired: formattedDesiredProfit,
+      };
     } else {
-      console.log(
-        chalk.whiteBright(
-          `${getLocalTimeStamp()} | Block : ${latestBlockNumber} | Current price : ${formattedCurrentVal} | Profit target : ${formattedDesiredProfit}`
-        )
-      );
-      return { isProfitBooked: false };
+      return {
+        isProfitBooked: false,
+        currentValue: formattedCurrentVal,
+        profitDesired: formattedDesiredProfit,
+      };
     }
   } catch (err) {
     throw err;

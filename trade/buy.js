@@ -1,7 +1,6 @@
-import chalk from "chalk";
-import { getLocalTimeStamp } from "../utils/index.js";
+import { getTxDeadLine } from "../utils/index.js";
 
-const buy = async ({ envs, exchanges, latestBlockNumber }) => {
+const buy = async ({ envs, exchanges, provider, gasPriceM, gasLimitM }) => {
   const {
     tokenIn,
     tokenOut,
@@ -11,6 +10,7 @@ const buy = async ({ envs, exchanges, latestBlockNumber }) => {
     gasPrice,
     amountIn,
     explorerUrl,
+    mode,
   } = envs;
   const { router } = exchanges;
 
@@ -23,21 +23,15 @@ const buy = async ({ envs, exchanges, latestBlockNumber }) => {
       amountOutMin = amounts[1].sub(amounts[1].div(`${Slippage}`));
     }
 
-    console.log(
-      chalk.whiteBright(
-        `${getLocalTimeStamp()} | Block : ${latestBlockNumber} | Buying`
-      )
-    );
-
     // const tx = await router.swapExactTokensForTokensSupportingFeeOnTransferTokens( //uncomment this if you want to buy deflationary token
     const tx = await router.swapETHForExactTokens(
       amountOutMin,
       [tokenIn, tokenOut],
       recipient,
-      Date.now() + 1000 * 60 * 5, //5 minutes
+      getTxDeadLine().buy,
       {
-        gasLimit: gasLimit,
-        gasPrice: gasPrice,
+        gasLimit: mode === "0" ? "400000" : gasLimit,
+        gasPrice: mode === "0" ? await provider.getGasPrice() : gasPrice,
         nonce: null, //set you want buy at where position in blocks
         value: amountIn,
       }
@@ -45,18 +39,11 @@ const buy = async ({ envs, exchanges, latestBlockNumber }) => {
 
     const receipt = await tx.wait();
 
-    console.log(
-      chalk.green(
-        `${getLocalTimeStamp()} | Block : ${
-          receipt.blockNumber
-        } | Buy successful!!`,
-        chalk.white(
-          `\nTransaction URL : ${explorerUrl}/tx/${receipt.logs[1].transactionHash}`
-        )
-      )
-    );
-
-    return { isTokenBought: true, latestBlockNumber: receipt.blockNumber };
+    return {
+      isTokenBought: true,
+      buyTxBlockNo: receipt.blockNumber,
+      transactionUrl: `${explorerUrl}/tx/${receipt.logs[1].transactionHash}`,
+    };
   } catch (err) {
     throw err;
   }

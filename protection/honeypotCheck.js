@@ -1,5 +1,3 @@
-import chalk from "chalk";
-
 const honeyPotCheck = async ({ envs, exchanges }) => {
   const { tokenOut, maxBuyTax, maxSellTax } = envs;
 
@@ -8,11 +6,15 @@ const honeyPotCheck = async ({ envs, exchanges }) => {
   const res = {
     isTokenHoneyPot: false,
     error: false,
+    approve: false,
+    sell: false,
+    buyTax: 0,
+    sellTax: 0,
+    isBuyTaxGteMaxBuyTax: false,
+    isSellTaxGteMaxSellTax: false,
   };
 
   try {
-    console.log(chalk.green.inverse(`Processing Honeypot check.....`));
-
     const tokenInfos = await bscSwapper.methods.getTokenInfos(tokenOut).call();
 
     const buy_tax = Math.round(
@@ -23,47 +25,31 @@ const honeyPotCheck = async ({ envs, exchanges }) => {
     );
 
     if (tokenInfos[5] && tokenInfos[6]) {
-      console.log(chalk.green("\n[DONE] Token is NOT a Honeypot!"));
       res.isTokenHoneyPot = false;
+      res.approve = true;
+      res.sell = true;
     } else {
-      console.log(chalk.red("\nToken is Honeypot, exiting"));
       res.isTokenHoneyPot = true;
+      res.approve = false;
+      res.sell = false;
     }
 
     if (buy_tax > maxBuyTax) {
       res.isTokenHoneyPot = true;
-      console.log(
-        chalk.red(
-          `\nBuyTax: ${chalk.yellow(
-            buy_tax
-          )} Token BuyTax exceeds maxBuyTax, exiting!`
-        )
-      );
+      res.buyTax = buy_tax;
+      res.isBuyTaxGteMaxBuyTax = true;
     }
 
     if (sell_tax > maxSellTax) {
       res.isTokenHoneyPot = true;
-      console.log(
-        chalk.red(
-          `\nSellTax: ${chalk.yellow(
-            sell_tax
-          )} Token SellTax exceeds SellTax, exiting!`
-        )
-      );
+      res.sellTax = sell_tax;
+      res.isSellTaxGteMaxSellTax = true;
     }
 
     return res;
   } catch (err) {
-    console.log(
-      chalk.red(
-        `\nHoneyPot Checker ${chalk.yellow(
-          `is Unable to validate this contract`
-        )}`,
-        `\nContract Address: ${tokenOut}`,
-        `\nError: ${chalk.red(JSON.parse(JSON.stringify(err)))}`
-      )
-    );
     res.error = true;
+    res.errorMessage = err;
     return res;
   }
 };

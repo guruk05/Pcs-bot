@@ -18,16 +18,28 @@ import {
   getLocalTimeStamp,
   getLatestBlock,
 } from "../utils/index.js";
+import {
+  liqAddValidator,
+  honeyPotValidator,
+  buyEnabledCheckValidator,
+  buyValidator,
+  approveValidator,
+  sellValidator,
+  bookProfitValidator,
+} from "../validators/res/index.js";
 
 const envs = getEnv();
 const {
   chain,
   network,
   exchange,
+  minBnb,
+  mode,
   checkHoneyPot,
   exitIfError,
   checkIfBuyEnabled,
   isTokenApproved,
+  cliViewObjs,
 } = envs;
 
 const { web3, provider, account } = connectToChain();
@@ -61,138 +73,6 @@ const getTradeFuncArgs = () => {
     exchanges,
     latestBlockNumber: globalObj.latestBlockNumber,
   };
-};
-
-const handleLiqEvent = async () => {
-  try {
-    //Listening for liquidity addition
-    if (!globalObj.isLiqAdded) {
-      const { isLiqAdded, isLiqGteMinExpectedLiq, totalLiq, spinner } =
-        await checkLiqAdd(getTradeFuncArgs());
-      globalObj.isLiqAdded = isLiqAdded;
-      globalObj.isLiqGteMinExpectedLiq = isLiqGteMinExpectedLiq;
-      globalObj.totalLiq = totalLiq;
-      globalObj.spinner = spinner;
-    }
-  } catch (err) {
-    console.log("🚀 ~ file: index.js ~ line 207 ~ handleSell ~ err", err);
-    throw err;
-  }
-};
-
-const handleHoneyPotCheck = async () => {
-  try {
-    //Buy once liq is added
-    if (globalObj.isLiqAdded && !globalObj.isTokenBought) {
-      //Ready to buy the token
-      const { isTokenHoneyPot, error } = await honeyPotCheck(
-        getTradeFuncArgs()
-      );
-      if (error && exitIfError === "true") {
-        process.exit();
-      }
-      globalObj.honeyPotCheck = isTokenHoneyPot;
-    }
-  } catch (err) {
-    console.log("🚀 ~ file: index.js ~ line 207 ~ handleSell ~ err", err);
-    throw err;
-  }
-};
-
-const handleBuyEnabledCheck = async () => {
-  try {
-    //Buy once liq is added
-    if (globalObj.isLiqAdded && !globalObj.isTokenBought) {
-      //Ready to buy the token
-      const { isBuyEnabled, error } = await buyEnabledCheck(getTradeFuncArgs());
-      if (error && exitIfError === "true") {
-        process.exit();
-      }
-      globalObj.isBuyEnabled = isBuyEnabled;
-    }
-  } catch (err) {
-    console.log("🚀 ~ file: index.js ~ line 207 ~ handleSell ~ err", err);
-    throw err;
-  }
-};
-
-const handleBuy = async () => {
-  try {
-    //Buy once liq is added
-    if (globalObj.isLiqAdded && !globalObj.isTokenBought) {
-      console.log(chalk.yellow(`--------------------------------------------`));
-      //Ready to buy the token
-      const { isTokenBought, latestBlockNumber } = await buy(
-        getTradeFuncArgs()
-      );
-      globalObj.isTokenBought = isTokenBought;
-      globalObj.latestBlockNumber = latestBlockNumber;
-    }
-  } catch (err) {
-    console.log("🚀 ~ file: index.js ~ line 207 ~ handleSell ~ err", err);
-    throw err;
-  }
-};
-
-const handleApprove = async () => {
-  try {
-    //Approve after buy
-    if (
-      globalObj.isLiqAdded &&
-      globalObj.isTokenBought &&
-      !globalObj.isTokenApproved
-    ) {
-      console.log(chalk.yellow(`--------------------------------------------`));
-      const { isTokenApproved, latestBlockNumber } = await approve(
-        getTradeFuncArgs()
-      );
-      globalObj.isTokenApproved = isTokenApproved;
-      globalObj.latestBlockNumber = latestBlockNumber;
-    }
-  } catch (err) {
-    console.log("🚀 ~ file: index.js ~ line 207 ~ handleSell ~ err", err);
-    throw err;
-  }
-};
-
-const handleProfitBooking = async () => {
-  try {
-    //Approve after buy
-    if (
-      globalObj.isLiqAdded &&
-      globalObj.isTokenBought &&
-      globalObj.isTokenApproved &&
-      !globalObj.isProfitBooked
-    ) {
-      console.log(chalk.yellow(`--------------------------------------------`));
-      const { isProfitBooked } = await bookProfit(getTradeFuncArgs());
-      globalObj.isProfitBooked = isProfitBooked;
-    }
-  } catch (err) {
-    console.log("🚀 ~ file: index.js ~ line 207 ~ handleSell ~ err", err);
-    throw err;
-  }
-};
-
-const handleSell = async () => {
-  try {
-    //Sell after approving
-    if (
-      globalObj.isLiqAdded &&
-      globalObj.isTokenBought &&
-      globalObj.isTokenApproved &&
-      globalObj.isProfitBooked &&
-      !globalObj.isTokenSold
-    ) {
-      console.log(chalk.yellow(`--------------------------------------------`));
-      const { isTokenSold, latestBlockNumber } = await sell(getTradeFuncArgs());
-      globalObj.isTokenSold = isTokenSold;
-      globalObj.latestBlockNumber = latestBlockNumber;
-    }
-  } catch (err) {
-    console.log("🚀 ~ file: index.js ~ line 207 ~ handleSell ~ err", err);
-    throw err;
-  }
 };
 
 const scanMemPool = async () => {
@@ -233,6 +113,74 @@ const scanMemPool = async () => {
               )
             );
 
+            const iface = new ethers.utils.Interface([
+              "function addLiquidityETH(address,uint256,uint256,uint256,address,uint256)",
+            ]);
+
+            const decodedInputData = iface.decodeFunctionData(
+              "addLiquidityETH",
+              transaction.data
+            );
+
+            console.log(
+              "TransactionGas",
+              transaction.gasPrice,
+              transaction.gasLimit
+            );
+
+            console.log(
+              "TransactionGasParsed",
+              ethers.utils.formatUnits(transaction.gasPrice, "gwei"),
+              ethers.utils.formatEther(transaction.gasLimit)
+            );
+
+            if (decodedInputData && decodedInputData[3]) {
+              const liqAmtThatWillBeAdded = ethers.utils.formatEther(
+                decodedInputData[3]
+              );
+
+              if (parseFloat(liqAmtThatWillBeAdded) > parseFloat(minBnb)) {
+                if (mode === "0") {
+                  const { isTokenBought, latestBlockNumber } = await buy({
+                    ...getTradeFuncArgs(),
+                    provider,
+                    gasPriceM: transaction.gasPrice,
+                    gasLimitM: transaction.gasLimit,
+                  });
+                }
+                const providerGas = await provider.getGasPrice();
+                console.log(
+                  "🚀 LIQ ADD SUCCESSFULL!!",
+                  "providerGas",
+                  providerGas
+                );
+                console.log(
+                  "🚀 LIQ ADD SUCCESSFULL!!",
+                  "ParsedGas",
+                  ethers.utils.parseUnits(`${providerGas}`, "gwei")
+                );
+                return;
+              } else {
+                console.log(
+                  chalk.redBright(
+                    `\nLiquidity did not meet min threshold | Liq to be added : ${chalk.white(
+                      liqAmtThatWillBeAdded
+                    )} | Min Liq to buy : ${chalk.white(minBnb)}`
+                  )
+                );
+                process.exit();
+              }
+            } else {
+              console.log(
+                chalk.redBright(
+                  `\nAdd Liquidity transaction does not have any LIQ AMOUNT to be added to Liq pool | Liq add transaction input data : ${chalk.white(
+                    decodedInputData
+                  )}`
+                )
+              );
+              process.exit();
+            }
+
             const receipt = await provider.waitForTransaction(transaction.hash);
 
             if (receipt) {
@@ -261,7 +209,7 @@ const tradeHandler = async () => {
       )
     );
 
-    await sleep(3000);
+    await sleep(network === "TESTNET" ? 0 : 3000);
 
     console.log(chalk.whiteBright("\nBot connected to Pancakeswap - BSC"));
     console.log(chalk.whiteBright(`Wallet - ${account.address}`));
@@ -280,8 +228,11 @@ const tradeHandler = async () => {
     );
     console.log(chalk.whiteBright(`Slippage percent- ${envs.Slippage}`));
     console.log(chalk.whiteBright(`Liquidity minimum - ${envs.minBnb}`));
-    console.log(chalk.whiteBright(`Buy | Sell GWEI - ${envs.gasPrice}`));
+    console.log(chalk.whiteBright(`Buy | Sell GWEI - ${cliViewObjs.gwei}`));
     console.log(chalk.whiteBright(`Buy | Sell GASLIMIT - ${envs.gasLimit}`));
+    console.log(
+      chalk.whiteBright(`Token approved already - ${isTokenApproved}`)
+    );
     console.log(
       chalk.whiteBright(`Buy trade check - ${envs.checkIfBuyEnabled}`)
     );
@@ -313,81 +264,215 @@ const tradeHandler = async () => {
       )
     );
 
-    // return;
-
-    await handleLiqEvent();
-
-    // console.log(
-    //   "🚀 ~ file: index.js ~ line 280 ~ tradeHandler ~ globalObj.isLiqAdded",
-    //   globalObj.isLiqAdded
-    // );
-    if (!globalObj.isLiqAdded) {
-      globalObj.spinner.stop();
-      await scanMemPool();
-    }
-
-    while (!globalObj.isLiqAdded || !globalObj.isLiqGteMinExpectedLiq) {
-      await handleLiqEvent();
-      // code block to be executed
-    }
-
     if (
       !globalObj.addLiqTransBlockNo ||
       globalObj.addLiqTransBlockNo.length === 0
     ) {
       globalObj.latestBlockNumber = await getLatestBlock(provider);
-    } else {
+    }
+
+    if (!globalObj.isLiqAdded) {
+      const checkLiqAddRes = await checkLiqAdd(getTradeFuncArgs());
+      const { isLiqAdded, isLiqGteMinExpectedLiq, totalLiq, spinner } =
+        checkLiqAddRes;
+      globalObj.isLiqAdded = isLiqAdded;
+      globalObj.isLiqGteMinExpectedLiq = isLiqGteMinExpectedLiq;
+      globalObj.totalLiq = totalLiq;
+      globalObj.spinner = spinner;
+
+      liqAddValidator({
+        ...checkLiqAddRes,
+        latestBlockNumber: globalObj.latestBlockNumber,
+      });
+    }
+
+    // if (!globalObj.isLiqAdded) {
+    //   globalObj && globalObj.spinner && globalObj.spinner.stop();
+    //   await scanMemPool();
+    // }
+
+    if (
+      globalObj.addLiqTransBlockNo &&
+      globalObj.addLiqTransBlockNo.length > 0
+    ) {
       globalObj.latestBlockNumber = globalObj.addLiqTransBlockNo;
     }
-    // do {
-    //   await handleLiqEvent();
-    // } while (!globalObj.isLiqAdded || !globalObj.isLiqGteMinExpectedLiq);
-    // console.log("🚀 ~ file: bot.js ~ line 52 ~ globalObj", globalObj);
-    console.log(
-      chalk.green(
-        `${getLocalTimeStamp()} | Block : ${
-          globalObj.latestBlockNumber
-        } | Liquidity found!! -- ${globalObj.totalLiq}`
-      )
-    );
 
-    // return;
-    // return;
+    while (!globalObj.isLiqAdded || !globalObj.isLiqGteMinExpectedLiq) {
+      if (!globalObj.isLiqAdded) {
+        const checkLiqAddRes = await checkLiqAdd(getTradeFuncArgs());
+        const { isLiqAdded, isLiqGteMinExpectedLiq, totalLiq, spinner } =
+          checkLiqAddRes;
+        globalObj.isLiqAdded = isLiqAdded;
+        globalObj.isLiqGteMinExpectedLiq = isLiqGteMinExpectedLiq;
+        globalObj.totalLiq = totalLiq;
+        globalObj.spinner = spinner;
 
-    // if (checkHoneyPot === "true") {
-    //   await handleHoneyPotCheck();
-    //   if (globalObj.isTokenHoneyPot) {
-    //     process.exit();
-    //   }
-    // }
+        liqAddValidator({
+          ...checkLiqAddRes,
+          latestBlockNumber: globalObj.latestBlockNumber,
+        });
+      }
+    }
 
-    // if (checkIfBuyEnabled === "true") {
-    //   console.log(chalk.green(`\nProcessing buy enabled check.....`));
-    //   do {
-    //     await handleBuyEnabledCheck();
-    //   } while (!globalObj.isBuyEnabled && globalObj.exitIfError === "false");
-    //   globalObj.isBuyEnabled && console.log(chalk.green(`\nBuy Enabled.....`));
-    // }
+    if (checkHoneyPot === "true") {
+      console.log(chalk.yellow(`--------------------------------------------`));
 
-    await handleBuy();
-    // console.log("🚀 ~ file: bot.js ~ line 52 ~ globalObj", globalObj);
+      console.log(
+        chalk.whiteBright(
+          `${getLocalTimeStamp()} | Block : ${
+            globalObj.latestBlockNumber
+              ? globalObj.latestBlockNumber
+              : "Pending"
+          } | Checking for HoneyPot`
+        )
+      );
+      if (globalObj.isLiqAdded && !globalObj.isTokenBought) {
+        const honeyPotCheckRes = await honeyPotCheck(getTradeFuncArgs());
+        const { isTokenHoneyPot } = honeyPotCheckRes;
+        globalObj.honeyPotCheck = isTokenHoneyPot;
 
-    await handleApprove();
-    // console.log("🚀 ~ file: bot.js ~ line 52 ~ globalObj", globalObj);
+        honeyPotValidator({
+          ...honeyPotCheckRes,
+          latestBlockNumber: globalObj.latestBlockNumber,
+          envs,
+        });
+      }
+    }
 
-    //Listening for token price changes to book profit
-    do {
-      await handleProfitBooking();
-    } while (!globalObj.isProfitBooked);
-    // console.log("🚀 ~ file: bot.js ~ line 52 ~ globalObj", globalObj);
+    if (checkIfBuyEnabled === "true") {
+      console.log(chalk.yellow(`--------------------------------------------`));
+      console.log(
+        chalk.whiteBright(
+          `${getLocalTimeStamp()} | Block : ${
+            globalObj.latestBlockNumber
+              ? globalObj.latestBlockNumber
+              : "Pending"
+          } | Checking/Waiting for Buy to be Enabled`
+        )
+      );
+      do {
+        if (globalObj.isLiqAdded && !globalObj.isTokenBought) {
+          const buyEnabledCheckRes = await buyEnabledCheck(getTradeFuncArgs());
+          const { isBuyEnabled, error } = buyEnabledCheckRes;
+          globalObj.isBuyEnabled = isBuyEnabled;
+          globalObj.buyEnabledError = error;
 
-    await handleSell();
-    // console.log("🚀 ~ file: bot.js ~ line 52 ~ globalObj", globalObj);
+          buyEnabledCheckValidator({
+            ...buyEnabledCheckRes,
+            latestBlockNumber: globalObj.latestBlockNumber,
+            envs,
+          });
+        }
+      } while (!globalObj.isBuyEnabled && !globalObj.buyEnabledError);
+    }
 
-    return;
+    if (globalObj.isLiqAdded && !globalObj.isTokenBought) {
+      console.log(chalk.yellow(`--------------------------------------------`));
+
+      console.log(
+        chalk.whiteBright(
+          `${getLocalTimeStamp()} | Block : ${
+            globalObj.latestBlockNumber
+              ? globalObj.latestBlockNumber
+              : "Pending"
+          } | Buying`
+        )
+      );
+      const buyRes = await buy(getTradeFuncArgs());
+      const { isTokenBought, buyTxBlockNo } = buyRes;
+      globalObj.isTokenBought = isTokenBought;
+      globalObj.latestBlockNumber = buyTxBlockNo;
+
+      buyValidator({ ...buyRes });
+    }
+
+    if (
+      globalObj.isLiqAdded &&
+      globalObj.isTokenBought &&
+      !globalObj.isTokenApproved
+    ) {
+      console.log(chalk.yellow(`--------------------------------------------`));
+
+      console.log(
+        chalk.whiteBright(
+          `${getLocalTimeStamp()} | Block : ${
+            globalObj.latestBlockNumber
+              ? globalObj.latestBlockNumber
+              : "Pending"
+          } | Approving`
+        )
+      );
+
+      const approveRes = await approve(getTradeFuncArgs());
+      const { isTokenApproved, approveTxBlockNo } = approveRes;
+      globalObj.isTokenApproved = isTokenApproved;
+      globalObj.latestBlockNumber = approveTxBlockNo;
+
+      approveValidator({ ...approveRes });
+    }
+
+    if (
+      globalObj.isLiqAdded &&
+      globalObj.isTokenBought &&
+      globalObj.isTokenApproved &&
+      !globalObj.isProfitBooked
+    ) {
+      console.log(chalk.yellow(`--------------------------------------------`));
+      console.log(
+        chalk.whiteBright(
+          `${getLocalTimeStamp()} | Block : ${
+            globalObj.latestBlockNumber
+              ? globalObj.latestBlockNumber
+              : "Pending"
+          } | Booking profit`
+        )
+      );
+
+      do {
+        const bookProfitRes = await bookProfit(getTradeFuncArgs());
+        const { isProfitBooked } = bookProfitRes;
+        globalObj.isProfitBooked = isProfitBooked;
+
+        bookProfitValidator({
+          ...bookProfitRes,
+          latestBlockNumber: globalObj.latestBlockNumber,
+        });
+      } while (!globalObj.isProfitBooked);
+    }
+
+    if (
+      globalObj.isLiqAdded &&
+      globalObj.isTokenBought &&
+      globalObj.isTokenApproved &&
+      globalObj.isProfitBooked &&
+      !globalObj.isTokenSold
+    ) {
+      console.log(chalk.yellow(`--------------------------------------------`));
+      console.log(
+        chalk.whiteBright(
+          `${getLocalTimeStamp()} | Block : ${
+            globalObj.latestBlockNumber
+              ? globalObj.latestBlockNumber
+              : "Pending"
+          } | Selling`
+        )
+      );
+
+      const sellRes = await sell(getTradeFuncArgs());
+      const { isTokenSold, sellTxBlockNo } = sellRes;
+      globalObj.isTokenSold = isTokenSold;
+      globalObj.latestBlockNumber = sellTxBlockNo;
+
+      sellValidator({
+        ...sellRes,
+      });
+    }
+
+    console.log(chalk.whiteBright(`\nSinpe done!!`));
+    process.exit();
   } catch (err) {
-    const error = JSON.parse(JSON.stringify(err));
-    console.log(error);
+    console.log(err);
   }
 };
 
