@@ -10,7 +10,7 @@ const globalObj = {
   isBuyEnabledLogPrinted: false,
 };
 
-const liqAddValidator = (params) => {
+const liqAddResValidator = (params) => {
   const {
     isLiqAdded,
     isLiqGteMinExpectedLiq,
@@ -82,7 +82,7 @@ const liqAddValidator = (params) => {
   }
 };
 
-const honeyPotValidator = (params) => {
+const honeyPotResValidator = (params) => {
   const {
     isTokenHoneyPot,
     error,
@@ -158,7 +158,7 @@ const honeyPotValidator = (params) => {
   }
 };
 
-const buyEnabledCheckValidator = (params) => {
+const buyEnabledCheckResValidator = (params) => {
   const { isBuyEnabled, error, errorMessage, envs, latestBlockNumber } = params;
   if (isBuyEnabled && !globalObj.isBuyEnabledLogPrinted && !error) {
     console.log(
@@ -185,7 +185,7 @@ const buyEnabledCheckValidator = (params) => {
   logExitIfErrorCases({ error, envs });
 };
 
-const buyValidator = (params) => {
+const buyResValidator = (params) => {
   const { isTokenBought, buyTxBlockNo, transactionUrl } = params;
 
   if (isTokenBought) {
@@ -198,7 +198,7 @@ const buyValidator = (params) => {
   }
 };
 
-const approveValidator = (params) => {
+const approveResValidator = (params) => {
   const { isTokenApproved, approveTxBlockNo } = params;
 
   if (isTokenApproved) {
@@ -212,7 +212,7 @@ const approveValidator = (params) => {
   }
 };
 
-const bookProfitValidator = (params) => {
+const bookProfitResValidator = (params) => {
   const { isProfitBooked, currentValue, profitDesired, latestBlockNumber } =
     params;
 
@@ -235,7 +235,7 @@ const bookProfitValidator = (params) => {
   }
 };
 
-const sellValidator = (params) => {
+const sellResValidator = (params) => {
   const { isTokenSold, sellTxBlockNo, transactionUrl } = params;
 
   if (isTokenSold) {
@@ -251,11 +251,11 @@ const sellValidator = (params) => {
 };
 
 export {
-  liqAddValidator,
-  honeyPotValidator,
-  buyEnabledCheckValidator,
-  buyValidator,
-  approveValidator,
-  bookProfitValidator,
-  sellValidator,
+  liqAddResValidator,
+  honeyPotResValidator,
+  buyEnabledCheckResValidator,
+  buyResValidator,
+  approveResValidator,
+  bookProfitResValidator,
+  sellResValidator,
 };

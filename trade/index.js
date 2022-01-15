@@ -14,33 +14,31 @@ import {
   connectToChain,
   getEnv,
   sleep,
-  inquirerPrompt,
   getLocalTimeStamp,
   getLatestBlock,
 } from "../utils/index.js";
 import {
-  liqAddValidator,
-  honeyPotValidator,
-  buyEnabledCheckValidator,
-  buyValidator,
-  approveValidator,
-  sellValidator,
-  bookProfitValidator,
+  liqAddResValidator,
+  honeyPotResValidator,
+  buyEnabledCheckResValidator,
+  buyResValidator,
+  approveResValidator,
+  sellResValidator,
+  bookProfitResValidator,
 } from "../validators/res/index.js";
 
+import {
+  honeyPotReqValidator,
+  buyEnabledCheckReqValidator,
+  buyReqValidator,
+  approveReqValidator,
+  sellReqValidator,
+  bookProfitReqValidator,
+} from "../validators/req/index.js";
+import { botTitle, initializeStartPrompt } from "../console/index.js";
+
 const envs = getEnv();
-const {
-  chain,
-  network,
-  exchange,
-  minBnb,
-  mode,
-  checkHoneyPot,
-  exitIfError,
-  checkIfBuyEnabled,
-  isTokenApproved,
-  cliViewObjs,
-} = envs;
+const { network, minBnb, mode, isTokenApproved } = envs;
 
 const { web3, provider, account } = connectToChain();
 
@@ -203,66 +201,11 @@ const scanMemPool = async () => {
 
 const tradeHandler = async () => {
   try {
-    console.log(
-      chalk.yellow(
-        `============ NICK BOT VERSION BETA v1.0.0.1000 ============`
-      )
-    );
+    botTitle();
 
     await sleep(network === "TESTNET" ? 0 : 3000);
 
-    console.log(chalk.whiteBright("\nBot connected to Pancakeswap - BSC"));
-    console.log(chalk.whiteBright(`Wallet - ${account.address}`));
-
-    console.log(chalk.whiteBright(`\nBot config for current snipe : `));
-    console.log(chalk.whiteBright(`\--------------------------------`));
-    console.log(chalk.whiteBright(`\nChain - ${chain}`));
-    console.log(chalk.whiteBright(`Network - ${network}`));
-    console.log(chalk.whiteBright(`Exchange - ${exchange}`));
-    console.log(chalk.whiteBright(`Your Wallet - ${account.address}`));
-    console.log(
-      chalk.whiteBright(`Token to snipe - ${envs.purchaseTokenAddress}`)
-    );
-    console.log(
-      chalk.whiteBright(`Amount for purchase - ${envs.AMOUNT_OF_BNB}`)
-    );
-    console.log(chalk.whiteBright(`Slippage percent- ${envs.Slippage}`));
-    console.log(chalk.whiteBright(`Liquidity minimum - ${envs.minBnb}`));
-    console.log(chalk.whiteBright(`Buy | Sell GWEI - ${cliViewObjs.gwei}`));
-    console.log(chalk.whiteBright(`Buy | Sell GASLIMIT - ${envs.gasLimit}`));
-    console.log(
-      chalk.whiteBright(`Token approved already - ${isTokenApproved}`)
-    );
-    console.log(
-      chalk.whiteBright(`Buy trade check - ${envs.checkIfBuyEnabled}`)
-    );
-    console.log(chalk.whiteBright(`Max Buy Tax - ${envs.maxSellTax}`));
-    console.log(chalk.whiteBright(`Max Sell Tax - ${envs.maxSellTax}`));
-    console.log(
-      chalk.whiteBright(
-        `HoneyPot checker address - ${envs.honeyPotCheckerAddress}`
-      )
-    );
-    console.log(chalk.whiteBright(`Honeypot check - ${envs.checkHoneyPot}`));
-    console.log(chalk.whiteBright(`Exit If Error - ${envs.exitIfError}\n`));
-
-    const { startSnipe } = await inquirerPrompt();
-
-    if (!startSnipe) {
-      console.log(chalk.red(`\nUpdate bot config & Restart the bot again...`));
-      process.exit();
-    }
-
-    console.log(chalk.whiteBright("\nStarting..."));
-    console.log(chalk.whiteBright(`---------------`));
-
-    console.log(
-      chalk.whiteBright(
-        `\n${getLocalTimeStamp()} | Block : ${await getLatestBlock(
-          provider
-        )} | Scanning new block`
-      )
-    );
+    initializeStartPrompt({ envs, account, provider });
 
     if (
       !globalObj.addLiqTransBlockNo ||
@@ -280,7 +223,7 @@ const tradeHandler = async () => {
       globalObj.totalLiq = totalLiq;
       globalObj.spinner = spinner;
 
-      liqAddValidator({
+      liqAddResValidator({
         ...checkLiqAddRes,
         latestBlockNumber: globalObj.latestBlockNumber,
       });
@@ -308,31 +251,25 @@ const tradeHandler = async () => {
         globalObj.totalLiq = totalLiq;
         globalObj.spinner = spinner;
 
-        liqAddValidator({
+        liqAddResValidator({
           ...checkLiqAddRes,
           latestBlockNumber: globalObj.latestBlockNumber,
         });
       }
     }
 
-    if (checkHoneyPot === "true") {
-      console.log(chalk.yellow(`--------------------------------------------`));
+    const checkHpReq = honeyPotReqValidator({
+      envs,
+      latestBlockNumber: globalObj.latestBlockNumber,
+    });
 
-      console.log(
-        chalk.whiteBright(
-          `${getLocalTimeStamp()} | Block : ${
-            globalObj.latestBlockNumber
-              ? globalObj.latestBlockNumber
-              : "Pending"
-          } | Checking for HoneyPot`
-        )
-      );
+    if (checkHpReq) {
       if (globalObj.isLiqAdded && !globalObj.isTokenBought) {
         const honeyPotCheckRes = await honeyPotCheck(getTradeFuncArgs());
         const { isTokenHoneyPot } = honeyPotCheckRes;
         globalObj.honeyPotCheck = isTokenHoneyPot;
 
-        honeyPotValidator({
+        honeyPotResValidator({
           ...honeyPotCheckRes,
           latestBlockNumber: globalObj.latestBlockNumber,
           envs,
@@ -340,17 +277,12 @@ const tradeHandler = async () => {
       }
     }
 
-    if (checkIfBuyEnabled === "true") {
-      console.log(chalk.yellow(`--------------------------------------------`));
-      console.log(
-        chalk.whiteBright(
-          `${getLocalTimeStamp()} | Block : ${
-            globalObj.latestBlockNumber
-              ? globalObj.latestBlockNumber
-              : "Pending"
-          } | Checking/Waiting for Buy to be Enabled`
-        )
-      );
+    const checkBuyEnabledReq = buyEnabledCheckReqValidator({
+      envs,
+      latestBlockNumber: globalObj.latestBlockNumber,
+    });
+
+    if (checkBuyEnabledReq) {
       do {
         if (globalObj.isLiqAdded && !globalObj.isTokenBought) {
           const buyEnabledCheckRes = await buyEnabledCheck(getTradeFuncArgs());
@@ -358,7 +290,7 @@ const tradeHandler = async () => {
           globalObj.isBuyEnabled = isBuyEnabled;
           globalObj.buyEnabledError = error;
 
-          buyEnabledCheckValidator({
+          buyEnabledCheckResValidator({
             ...buyEnabledCheckRes,
             latestBlockNumber: globalObj.latestBlockNumber,
             envs,
@@ -368,23 +300,14 @@ const tradeHandler = async () => {
     }
 
     if (globalObj.isLiqAdded && !globalObj.isTokenBought) {
-      console.log(chalk.yellow(`--------------------------------------------`));
+      buyReqValidator({ latestBlockNumber: globalObj.latestBlockNumber });
 
-      console.log(
-        chalk.whiteBright(
-          `${getLocalTimeStamp()} | Block : ${
-            globalObj.latestBlockNumber
-              ? globalObj.latestBlockNumber
-              : "Pending"
-          } | Buying`
-        )
-      );
       const buyRes = await buy(getTradeFuncArgs());
       const { isTokenBought, buyTxBlockNo } = buyRes;
       globalObj.isTokenBought = isTokenBought;
       globalObj.latestBlockNumber = buyTxBlockNo;
 
-      buyValidator({ ...buyRes });
+      buyResValidator({ ...buyRes });
     }
 
     if (
@@ -392,24 +315,14 @@ const tradeHandler = async () => {
       globalObj.isTokenBought &&
       !globalObj.isTokenApproved
     ) {
-      console.log(chalk.yellow(`--------------------------------------------`));
-
-      console.log(
-        chalk.whiteBright(
-          `${getLocalTimeStamp()} | Block : ${
-            globalObj.latestBlockNumber
-              ? globalObj.latestBlockNumber
-              : "Pending"
-          } | Approving`
-        )
-      );
+      approveReqValidator({ latestBlockNumber: globalObj.latestBlockNumber });
 
       const approveRes = await approve(getTradeFuncArgs());
       const { isTokenApproved, approveTxBlockNo } = approveRes;
       globalObj.isTokenApproved = isTokenApproved;
       globalObj.latestBlockNumber = approveTxBlockNo;
 
-      approveValidator({ ...approveRes });
+      approveResValidator({ ...approveRes });
     }
 
     if (
@@ -418,23 +331,16 @@ const tradeHandler = async () => {
       globalObj.isTokenApproved &&
       !globalObj.isProfitBooked
     ) {
-      console.log(chalk.yellow(`--------------------------------------------`));
-      console.log(
-        chalk.whiteBright(
-          `${getLocalTimeStamp()} | Block : ${
-            globalObj.latestBlockNumber
-              ? globalObj.latestBlockNumber
-              : "Pending"
-          } | Booking profit`
-        )
-      );
+      bookProfitReqValidator({
+        latestBlockNumber: globalObj.latestBlockNumber,
+      });
 
       do {
         const bookProfitRes = await bookProfit(getTradeFuncArgs());
         const { isProfitBooked } = bookProfitRes;
         globalObj.isProfitBooked = isProfitBooked;
 
-        bookProfitValidator({
+        bookProfitResValidator({
           ...bookProfitRes,
           latestBlockNumber: globalObj.latestBlockNumber,
         });
@@ -448,23 +354,14 @@ const tradeHandler = async () => {
       globalObj.isProfitBooked &&
       !globalObj.isTokenSold
     ) {
-      console.log(chalk.yellow(`--------------------------------------------`));
-      console.log(
-        chalk.whiteBright(
-          `${getLocalTimeStamp()} | Block : ${
-            globalObj.latestBlockNumber
-              ? globalObj.latestBlockNumber
-              : "Pending"
-          } | Selling`
-        )
-      );
+      sellReqValidator({ latestBlockNumber: globalObj.latestBlockNumber });
 
       const sellRes = await sell(getTradeFuncArgs());
       const { isTokenSold, sellTxBlockNo } = sellRes;
       globalObj.isTokenSold = isTokenSold;
       globalObj.latestBlockNumber = sellTxBlockNo;
 
-      sellValidator({
+      sellResValidator({
         ...sellRes,
       });
     }
