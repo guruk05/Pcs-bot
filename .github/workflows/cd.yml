@@ -38,6 +38,7 @@ jobs:
         uses: SpicyPizza/create-envfile@v2.0
         with:
           envkey_API_KEYS_JSON: ${{ env.API_KEYS_JSON }}
+          envkey_API_KEYS: ${{ toJSON(env.API_KEYS_JSON) }}
           envkey_SANDBOX_MODE: false
           envkey_DEMO_MODE: false
           envkey_PLAYGROUND: false
@@ -48,36 +49,6 @@ jobs:
         run: |
           echo "Contents of .env file:"
           cat .env
-          
-      - name: Assign API_KEYS_JSON value
-        run: |
-          echo "API_KEYS_JSON=$API_KEYS_JSON"
-
-      - name: JQ API_KEYS_JSON properties
-        run: |
-          echo "API_KEYS_JSON properties:"
-          echo "$API_KEYS_JSON" | jq
-          
-      - name: Set API_KEYS_JSON variable
-        run: |
-          API_KEYS_JSON={
-            "KMI_API_KEY": "T5zaSyD7rQrVq_by0mUQ_ot7yR7uAWqhy-wqFBY",
-            "INGENICO_API_KEY": "AIzaSyD1rQrVq_by0mUQ_ot6yR9uAWqhy-wqFBY",
-            "FMI_API_KEY": "eUJ11lyos99CA5aSymcEDaF7DEqrNNyy8jJur2B2",
-            "MOCKPOS_API_KEY": "kkq1akIvcW8z2WlTsJzya1Nk1j5PqB3j9mt6ZoUs23",
-            "MSWIPE_API_KEY": "77B_7LUtDHa6_VEPfS4v1V4HM_EFKEnM3D_DsmTmwUm",
-            "EXAMPLE_STORE_API_KEY": "55E_5LUtDHa5_VEPfS2v7V8HM_EFKEnM5D_DsmTmwU5",
-            "EXAMPLE_TOY_STORE_API_KEY": "82ce74a9-26cf-4894-9395-4c3e4591d6c5_7V8HM5",
-            "PAX_TERMINAL_DEMO_APP_API_KEY": "a6F_lKZQ1YU8_x3VgM4d9s2TJ_t5oFpB2S_RmnXQvW7",
-            "DEMO_PRINT_DRIVER_COMPANY": "R8z_IuFWtVJH_w9RbP3s2c5OQ_h4iPtG7P_ZnkHOpI6"
-          }
-          echo "::set-output name=API_KEYS_JSON::$API_KEYS_JSON"
-
-      - name: Log API_KEYS_JSON as JSON
-        run: |
-          API_KEYS_JSON=$(echo "$API_KEYS_JSON" | jq -c '.')
-          echo "::set-output name=API_KEYS_JSON::$API_KEYS_JSON"
-          echo "API_KEYS_JSON=$API_KEYS_JSON"
 
       - name: Convert API_KEYS_JSON to JSON string
         run: |
