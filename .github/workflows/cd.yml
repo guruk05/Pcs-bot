@@ -32,8 +32,7 @@ jobs:
         with:
           ssm-path: /${{ env.BUILD_STAGE }}/${{ env.BUILD_APP }}/STAGING_ENV
           prefix: null
-          decryption: false
-          mask-values: false
+          decryption: true
 
       - name: Create .env file
         uses: SpicyPizza/create-envfile@v2.0
