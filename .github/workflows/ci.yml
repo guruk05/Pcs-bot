@@ -29,11 +29,12 @@ jobs:
         id: ssm-parameter
         run: |
           parameter_name=/staging/backend/STAGING_ENV
-          parameter_value=$(aws ssm get-parameter --name $parameter_name --query "Parameter.Value" --output text)
-          echo "SSM parameter value: $parameter_value"
+          encrypted_value=$(aws ssm get-parameter --name $parameter_name --query "Parameter.Value" --output text)
+          decrypted_value=$(aws kms decrypt --ciphertext-blob fileb://<(echo $encrypted_value | base64 --decode) --output text --query Plaintext | base64 --decode)
+          echo "Decrypted SSM parameter value: $decrypted_value"
 
           # Set the SSM parameter as an output for later steps
-          echo "::set-output name=parameter_value::$parameter_value"
+          echo "::set-output name=parameter_value::$decrypted_value"
 
   use-parameter:
     needs: retrieve-parameter
