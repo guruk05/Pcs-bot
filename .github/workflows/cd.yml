@@ -43,6 +43,11 @@ jobs:
           envkey_PLAYGROUND: false
           envkey_API_DOCS_PATH: /docs
           fail_on_empty: true
+
+      - name: Log .env file contents
+        run: |
+          echo "Contents of .env file:"
+          cat .env
           
       - name: Set API_KEYS_JSON variable
         run: |
