@@ -37,29 +37,7 @@ jobs:
       - name: Create .env file
         uses: SpicyPizza/create-envfile@v2.0
         with:
-          envkey_ID_DATABASE_URL: ${{ env.ID_DATABASE_URL }}
-          envkey_KR_DATABASE_URL: ${{ env.KR_DATABASE_URL }}
-          envkey_MASTER_DATABASE_URL: ${{ env.MASTER_DATABASE_URL }}
-          envkey_REDIS_DOMAIN: ${{ env.REDIS_DOMAIN }}
-          envkey_REDIS_PORT_NUMBER: ${{ env.REDIS_PORT_NUMBER }}
-          envkey_REDIS_CLUSTER_PASSWORD: ${{ env.REDIS_CLUSTER_PASSWORD }}
-          envkey_GCP_SERVICE_ACCOUNT: ${{ env.GCP_SERVICE_ACCOUNT }}
-          envkey_SERVER_DOMAIN: ${{ env.SERVER_DOMAIN }}
-          envkey_DOMAIN: ${{ env.DOMAIN }}
-          envkey_FIREBASE_API_KEY: ${{ env.FIREBASE_API_KEY }}
-          envkey_SENDGRID_API_KEY: ${{ env.SENDGRID_API_KEY }}
-          envkey_ENCRYPT_KEY: ${{ env.ENCRYPT_KEY }}
-          envkey_ENCRYPT_IVS: ${{ env.ENCRYPT_IVS }}
-          envkey_SENTRY_DSN: ${{ env.SENTRY_DSN }}
-          envkey_GOOGLE_CLIENT_ID: ${{ env.GOOGLE_CLIENT_ID }}
-          envkey_ENVIRONMENT: ${{ env.BUILD_STAGE }}
-          envkey_NODE_ENV: ${{ env.BUILD_STAGE }}
           envkey_API_KEYS_JSON: ${{ toJSON(env.API_KEYS_JSON) }}
-          envkey_JWT_EXPIRY: ${{ env.JWT_EXPIRY }}
-          envkey_JWT_SECRET: ${{ env.JWT_SECRET }}
-          envkey_JWT_AUDIENCE: ${{ env.JWT_AUDIENCE }}
-          envkey_JWT_PROVIDER: ${{ env.JWT_PROVIDER }}
-          envkey_TEST_ACCOUNT_UID: test
           envkey_SANDBOX_MODE: false
           envkey_DEMO_MODE: false
           envkey_PLAYGROUND: false
