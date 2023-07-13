@@ -6,7 +6,6 @@ on:
     branches: [main]
 
 jobs:
-
   build:
     name: Build
     runs-on: ubuntu-latest
@@ -36,9 +35,6 @@ jobs:
           
       - name: Output Bardavon Actions
         run: echo $STAGING_ENV
-        
-      - name: JSON Stringify
-        run: $(echo ${{ env.API_KEYS_JSON }}| jq -R 'fromjson')
       
       - name: Prepare .env file
         uses: nohmad/aws-ssm-parameter-store-action@master
@@ -51,6 +47,7 @@ jobs:
           filename: .env
 
       - name: Create .env file
+        id: create-env
         uses: SpicyPizza/create-envfile@v2.0
         with:
           envkey_API_KEYS_JSON: ${{ env.API_KEYS_JSON }}
@@ -61,23 +58,13 @@ jobs:
           envkey_API_DOCS_PATH: /docs
           fail_on_empty: true
           
-      - name: Convert envkey_API_KEYS_JSON to valid JSON
-        run: |
-          # Extract the value from the input
-          INPUT_VALUE="${{ env.API_KEYS_JSON }}"
-
-          # Replace the keys and values with double quotes
-          JSON_VALUE=$(echo "$INPUT_VALUE" | sed -E 's/([A-Z_]+):/"\1":/g; s/([A-Za-z0-9-]+),/"\1",/g; s/([A-Za-z0-9-]+)},"/\1"},/g')
-
-          # Log the converted JSON value
-          echo "API_KEYS: '$JSON_VALUE'"
-
       - name: Read .env file contents
         run: |
           echo "Contents of .env file:"
           cat .env
 
-      - name: Convert API_KEYS_JSON to JSON string
-        run: |
-          API_KEYS_JSON=$(echo "${{ env.API_KEYS_JSON }}" | jq -c -r)
-          echo "API_KEYS_JSON=${API_KEYS_JSON}" >> $GITHUB_ENV
+      - name: Save .env file as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: env-file
+          path: .env
