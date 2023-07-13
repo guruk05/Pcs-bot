@@ -44,6 +44,12 @@ jobs:
           envkey_API_DOCS_PATH: /docs
           fail_on_empty: true
 
+      - name: Log API_KEYS_JSON as JSON
+        run: |
+          API_KEYS_JSON=$(echo "$API_KEYS_JSON" | jq -c '.')
+          echo "::set-output name=API_KEYS_JSON::$API_KEYS_JSON"
+          echo "API_KEYS_JSON=$API_KEYS_JSON"
+
       - name: Convert API_KEYS_JSON to JSON string
         run: |
           API_KEYS_JSON=$(echo "${{ env.API_KEYS_JSON }}" | jq -c -r)
