@@ -1,0 +1,72 @@
+name: Piperks Backend Deployment
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    env:
+      BUILD_APP: 'backend'
+      BUILD_STAGE: 'staging'
+      AWS_EBS_PLATFORM: 'Node.js'
+      AWS_EBS_APPLICATION: 'Piperks-backend'
+      AWS_EBS_ENVIRONMENT: 'staging'
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+
+    steps:
+      - name: Get environment variable from aws ssm
+        uses: Bardavon-Health/actions-aws-ssm-params-to-env@v1.2
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+        with:
+          ssm-path: /${{ env.BUILD_STAGE }}/${{ env.BUILD_APP }}/STAGING_ENV
+          prefix: null
+          decryption: true
+
+      - name: Convert API_KEYS_JSON to JSON string
+        run: |
+          API_KEYS_JSON=$(echo "${{ env.API_KEYS_JSON }}" | jq -c -r)
+          echo "API_KEYS_JSON=${API_KEYS_JSON}" >> $GITHUB_ENV
+
+      - name: Create .env file
+        uses: SpicyPizza/create-envfile@v2.0
+        with:
+          envkey_ID_DATABASE_URL: ${{ env.ID_DATABASE_URL }}
+          envkey_KR_DATABASE_URL: ${{ env.KR_DATABASE_URL }}
+          envkey_MASTER_DATABASE_URL: ${{ env.MASTER_DATABASE_URL }}
+          envkey_REDIS_DOMAIN: ${{ env.REDIS_DOMAIN }}
+          envkey_REDIS_PORT_NUMBER: ${{ env.REDIS_PORT_NUMBER }}
+          envkey_REDIS_CLUSTER_PASSWORD: ${{ env.REDIS_CLUSTER_PASSWORD }}
+          envkey_GCP_SERVICE_ACCOUNT: ${{ env.GCP_SERVICE_ACCOUNT }}
+          envkey_SERVER_DOMAIN: ${{ env.SERVER_DOMAIN }}
+          envkey_DOMAIN: ${{ env.DOMAIN }}
+          envkey_FIREBASE_API_KEY: ${{ env.FIREBASE_API_KEY }}
+          envkey_SENDGRID_API_KEY: ${{ env.SENDGRID_API_KEY }}
+          envkey_ENCRYPT_KEY: ${{ env.ENCRYPT_KEY }}
+          envkey_ENCRYPT_IVS: ${{ env.ENCRYPT_IVS }}
+          envkey_SENTRY_DSN: ${{ env.SENTRY_DSN }}
+          envkey_GOOGLE_CLIENT_ID: ${{ env.GOOGLE_CLIENT_ID }}
+          envkey_ENVIRONMENT: ${{ env.BUILD_STAGE }}
+          envkey_NODE_ENV: ${{ env.BUILD_STAGE }}
+          envkey_API_KEYS_JSON: ${{ toJSON(env.API_KEYS_JSON) }}
+          envkey_JWT_EXPIRY: ${{ env.JWT_EXPIRY }}
+          envkey_JWT_SECRET: ${{ env.JWT_SECRET }}
+          envkey_JWT_AUDIENCE: ${{ env.JWT_AUDIENCE }}
+          envkey_JWT_PROVIDER: ${{ env.JWT_PROVIDER }}
+          envkey_TEST_ACCOUNT_UID: test
+          envkey_SANDBOX_MODE: false
+          envkey_DEMO_MODE: false
+          envkey_PLAYGROUND: false
+          envkey_API_DOCS_PATH: /docs
+          fail_on_empty: true
