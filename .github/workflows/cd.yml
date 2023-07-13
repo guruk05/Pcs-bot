@@ -47,16 +47,16 @@ jobs:
           format: dotenv
           filename: .env
 
-#       - name: Create .env file
-#         uses: SpicyPizza/create-envfile@v2.0
-#         with:
-#           envkey_API_KEYS_JSON: ${{ env.API_KEYS_JSON }}
-#           envkey_API_KEYS: ${{ toJSON(env.API_KEYS_JSON) }}
-#           envkey_SANDBOX_MODE: false
-#           envkey_DEMO_MODE: false
-#           envkey_PLAYGROUND: false
-#           envkey_API_DOCS_PATH: /docs
-#           fail_on_empty: true
+      - name: Create .env file
+        uses: SpicyPizza/create-envfile@v2.0
+        with:
+          envkey_API_KEYS_JSON: ${{ env.API_KEYS_JSON }}
+          envkey_API_KEYS: ${{ toJSON(env.API_KEYS_JSON) }}
+          envkey_SANDBOX_MODE: false
+          envkey_DEMO_MODE: false
+          envkey_PLAYGROUND: false
+          envkey_API_DOCS_PATH: /docs
+          fail_on_empty: true
 
       - name: Read .env file contents
         run: |
