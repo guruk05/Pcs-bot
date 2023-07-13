@@ -35,16 +35,12 @@ jobs:
           
       - name: Output Bardavon Actions
         run: echo $STAGING_ENV
-      
-      - name: Prepare .env file
-        uses: nohmad/aws-ssm-parameter-store-action@master
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
-          path: /${{ env.BUILD_STAGE }}/${{ env.BUILD_APP }}/STAGING_ENV
-          format: dotenv
-          filename: .env
+        
+      - name: Parse and set environment variables
+        run: |
+          echo "${{ env.API_KEYS_JSON }}" > keys.json
+          envs=$(jq -r 'to_entries | map("\(.key)=\(.value|tostring)") | join("\n")' keys.json)
+          echo "$envs" >> $GITHUB_ENV
 
       - name: Create .env file
         id: create-env
