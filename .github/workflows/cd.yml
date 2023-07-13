@@ -49,10 +49,14 @@ jobs:
           echo "Contents of .env file:"
           cat .env
           
-      - name: Parse API_KEYS_JSON
+      - name: Assign API_KEYS_JSON value
         run: |
-          API_KEYS_JSON=$(node -p "JSON.stringify(JSON.parse('$API_KEYS_JSON'))")
-          echo "::set-output name=API_KEYS_JSON::$API_KEYS_JSON"
+          echo "API_KEYS_JSON=$API_KEYS_JSON"
+
+      - name: JQ API_KEYS_JSON properties
+        run: |
+          echo "API_KEYS_JSON properties:"
+          echo "$API_KEYS_JSON" | jq
           
       - name: Set API_KEYS_JSON variable
         run: |
