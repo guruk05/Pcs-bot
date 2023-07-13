@@ -38,20 +38,8 @@ jobs:
         run: echo $STAGING_ENV
         
       - name: JSON Stringify
-        run: |
-          # Define your data
-          const data = {
-            name: 'John Doe',
-            age: 25,
-            email: 'johndoe@example.com'
-          };
-
-          # Convert the data to a JSON string
-          const jsonString = JSON.stringify(data);
-
-          # Store the JSON string as an environment variable
-          echo "JSON_STRING=${jsonString}" >> $GITHUB_ENV
-          
+        run: $(echo ${{ env.API_KEYS_JSON }}| jq -R 'fromjson')
+      
       - name: Prepare .env file
         uses: nohmad/aws-ssm-parameter-store-action@master
         with:
