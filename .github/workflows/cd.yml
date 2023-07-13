@@ -61,10 +61,10 @@ jobs:
       - name: Convert envkey_API_KEYS_JSON to valid JSON
         run: |
           # Extract the value from the input
-          INPUT_VALUE=${{ env.API_KEYS_JSON }}
+          INPUT_VALUE="${{ env.API_KEYS_JSON }}"
 
           # Replace the keys and values with double quotes
-          JSON_VALUE=$(echo "$INPUT_VALUE" | sed 's/{\([^,]*\):/\{"\1":/g; s/:\([^,}]*\)}/:"\1"\}/g')
+          JSON_VALUE=$(echo "$INPUT_VALUE" | sed -E 's/([A-Z_]+):/"\1":/g; s/([A-Za-z0-9-]+),/"\1",/g; s/([A-Za-z0-9-]+)},"/\1"},/g')
 
           # Log the converted JSON value
           echo "API_KEYS: '$JSON_VALUE'"
