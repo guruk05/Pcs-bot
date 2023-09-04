@@ -84,7 +84,7 @@ jobs:
         run: |
           for attempt in 1 2; do
             echo "Attempt $attempt:"
-            eb health ${{ env.AWS_EBS_ENVIRONMENT }} | awk 'NR>2 && $2 == "ok" {getline; if ($2 == 0) {exit_status=1}}'
+            eb health ${{ env.AWS_EBS_ENVIRONMENT }} | awk 'NR>2 && $2 == "ok" {getline; if ($2 == 0) {exit_status=1}} END {exit_status=0}'
             exit_status=$?
             echo "Exit Status: $exit_status"
             if [ $exit_status -eq 0 ]; then
@@ -99,6 +99,7 @@ jobs:
           if [ $exit_status -ne 0 ]; then
             exit 1
           fi
+
 
 
 
