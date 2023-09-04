@@ -83,14 +83,23 @@ jobs:
         id: retry
         run: |
             exit_status=2
-            awk 'NR>2 && $2 == "ok" {
-              getline next_line
-              if (next_line ~ /1/) {
-                exit_status=0
+            awk 'NR>2 {
+              if ($2 == "ok") {
+                getline next_line
+                if (next_line ~ /1/) {
+                  exit_status=0
+                } else {
+                  exit_status=1
+                }
+                print "Status: ok"
+                print "Next line:", next_line
+                print "Exit Status:", exit_status
               } else {
-                exit_status=1
+                print "Status:", $2
+                print "Exit Status:", exit_status
               }
-            }'
+            }' <<< "$eb_health_output"
+
 
 
 
