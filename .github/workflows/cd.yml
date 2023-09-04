@@ -73,7 +73,15 @@ jobs:
         run: |
           eb init ${{ env.AWS_EBS_APPLICATION }} --region ${{ env.AWS_DEFAULT_REGION }} --platform ${{ env.AWS_EBS_PLATFORM }}
           eb use ${{ env.AWS_EBS_ENVIRONMENT }}
-          
+
+      - name: Elastic Beanstalk Health Check
+        run: |
+          eb health ${{ env.AWS_EBS_ENVIRONMENT }} | awk 'NR>2 && $2 == "ok" {getline; if ($2 == 0) {exit_status=1}} END {exit exit_status}'
+          exit_status=$?
+          if [ $exit_status -eq 1 ]; then
+            exit 1
+          fi
+
       - name: Retry Step
         id: retry
         run: |
