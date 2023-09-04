@@ -84,7 +84,7 @@ jobs:
         run: |
             retry_count=0
             while [ $retry_count -lt 2 ]; do
-              health_code=$(eb health testing | awk 'NR==4 && $2=="ok" {getline; if ($5==1) {health_code=1} else {health_code=0}}; END {print health_code}')
+              health_code=$(eb health testing | awk 'NR==4 && $2=="ok" {getline; if ($2==1) {health_code=1} else {health_code=0}}; END {print health_code}')
               echo "Health Code: $health_code"
               if [ "$health_code" -eq 1 ]; then
                 echo "Server health: ok"
