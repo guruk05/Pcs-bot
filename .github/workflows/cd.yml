@@ -83,7 +83,7 @@ jobs:
         id: retry
         run: |
             exit_status=2
-            awk 'NR>2 {
+            eb health ${{ env.AWS_EBS_ENVIRONMENT }} | awk 'NR>2 {
               if ($2 == "ok") {
                 getline next_line
                 if (next_line ~ /1/) {
