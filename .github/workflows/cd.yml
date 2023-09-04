@@ -82,11 +82,17 @@ jobs:
             exit_status=$?
             if [ $exit_status -eq 0 ]; then
               # Exit if the command succeeds
-              exit 0
+              break
             fi
             if [ $attempt -lt 2 ]; then
               echo "Retrying in 1 minute and 30 seconds..."
               sleep 90
             fi
           done
-          exit 1
+          if [ $exit_status -ne 0 ]; then
+            exit 1
+          fi
+
+
+
+
