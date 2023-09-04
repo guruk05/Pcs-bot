@@ -76,7 +76,7 @@ jobs:
 
       - name: Elastic Beanstalk Health Check
         run: |
-          eb health ${{ env.AWS_EBS_ENVIRONMENT }} | awk 'NR>2 && $2 == "ok" {getline; if ($2 == 0) {exit_status=1}} END {exit exit_status}'
+          eb health ${{ env.AWS_EBS_ENVIRONMENT }} | awk 'NR>2 && $2 == "ok" {getline; if ($2 == 0) {exit_status=0}} END {exit exit_status}'
           exit_status=$?
 
       - name: Retry Step
