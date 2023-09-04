@@ -82,19 +82,16 @@ jobs:
       - name: Retry Step
         id: retry
         run: |
-          for attempt in 1 2; do
-            echo "Attempt $attempt:"
-            eb_health_output=$(eb health ${{ env.AWS_EBS_ENVIRONMENT }})
-            
-            # Now, we'll use awk to process the captured output
             exit_status=2
-            awk 'NR>2 && $2 == "ok" {getline; if ($2 == 1) {exit_status=0} else {exit_status=1}}
-            
-            echo "Exit Status: $exit_status"
-          done
-          if [ $exit_status -ne 0 ]; then
-            exit 1
-          fi
+            awk 'NR>2 && $2 == "ok" {
+              getline next_line
+              if (next_line ~ /1/) {
+                exit_status=0
+              } else {
+                exit_status=1
+              }
+            }'
+
 
 
 
