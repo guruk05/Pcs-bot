@@ -91,7 +91,7 @@ jobs:
                 exit 0
               elif [ "$health_code" -eq 0 ]; then
                 echo "Server health: not ok, retry in 90 seconds"
-                sleep 3
+                sleep 10
                 retry_count=$((retry_count + 1))
               else
                 echo "Invalid health code"
