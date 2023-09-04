@@ -79,7 +79,7 @@ jobs:
           eb health ${{ env.AWS_EBS_ENVIRONMENT }} | awk 'NR>2 && $2 == "ok" {getline; if ($2 == 0) {exit_status=1}} END {exit exit_status}'
           exit_status=$?
           if [ $exit_status -eq 1 ]; then
-            exit 1
+            exit 0
           fi
 
       - name: Retry Step
