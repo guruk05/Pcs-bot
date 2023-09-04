@@ -82,23 +82,25 @@ jobs:
       - name: Retry Step
         id: retry
         run: |
-            exit_status=2
-            eb health ${{ env.AWS_EBS_ENVIRONMENT }} | awk 'NR>2 {
-              if ($2 == "ok") {
-                getline next_line
-                if (next_line ~ /1/) {
-                  exit_status=0
-                } else {
-                  exit_status=1
-                }
-                print "Status: ok"
-                print "Next line:", next_line
-                print "Exit Status:", exit_status
-              } else {
-                print "Status:", $2
-                print "Exit Status:", exit_status
-              }
-            }' <<< "$eb_health_output"
+            retry_count=0
+            while [ $retry_count -lt 2 ]; do
+              health_code=$(eb health testing | awk 'NR==4 && $2=="ok" {getline; if ($5==1) {health_code=1} else {health_code=0}}; END {print health_code}')
+              echo "Health Code: $health_code"
+              if [ "$health_code" -eq 1 ]; then
+                echo "Server health: ok"
+                exit 0
+              elif [ "$health_code" -eq 0 ]; then
+                echo "Server health: not ok, retry in 90 seconds"
+                sleep 3
+                retry_count=$((retry_count + 1))
+              else
+                echo "Invalid health code"
+                exit 1
+              fi
+            done
+            echo "Server health: not ok"
+            exit 1
+
 
 
 
