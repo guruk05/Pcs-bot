@@ -36,8 +36,9 @@ jobs:
       - name: Output Bardavon Actions
         env:
           CNAME: ${{ secrets.AWS_REGION }}
-        run: echo "$CNAME"
-        
+        run: | 
+          echo "$CNAME"
+          echo ${{ secrets.AWS_REGION }}
       # - name: Parse and set environment variables
       #   run: |
       #     echo "${{ env.API_KEYS_JSON }}" > keys.json
