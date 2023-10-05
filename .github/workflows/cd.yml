@@ -94,5 +94,10 @@ jobs:
             [ "$ebs_env_cname" = testing-backend-env-a.eba-spn44min.ap-southeast-1.elasticbeanstalk.com ] && blue_env_name="$ebs_env" >> $GITHUB_OUTPUT
           done
           
-          [ -z "$blue_env_name" ] && { echo "Elastic beanstalk blue environment not found"; }
-          [ -n "$blue_env_name" ] && { echo "Elastic beanstalk blue environment "$blue_env_name" found"; }
+          if [ -n "$blue_env_name" ]; then
+            echo "Blue environment found: $blue_env_name"
+          else
+            echo "Elastic beanstalk blue environment not found"
+            exit 1
+          fi
+
