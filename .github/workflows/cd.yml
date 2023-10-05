@@ -92,7 +92,7 @@ jobs:
           for ebs_env in $(eb list | awk '{print $1}'); do
             echo "$ebs_env"
             ebs_env_cname=$(eb status $ebs_env | grep "CNAME:" | awk '{print $2}')
-            [ "$ebs_env_cname" = "$CNAME" ] && blue_env_name="$ebs_env" >> $GITHUB_OUTPUT
+            [ "$ebs_env_cname" = "testing-backend-env-a.eba-spn44min.ap-southeast-1.elasticbeanstalk.com" ] && blue_env_name="$ebs_env" >> $GITHUB_OUTPUT
           done
 
           [ -z "$blue_env_name" ] && { echo "Elastic beanstalk blue environment not found"; exit 1; }
