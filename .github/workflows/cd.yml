@@ -19,7 +19,7 @@ jobs:
       AWS_EBS_ENVIRONMENT: 'testing'
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+      AWS_DEFAULT_REGION: "ap-southeast-1"
 
     steps:
       - name: Get environment variable from aws ssm
@@ -27,7 +27,7 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+          AWS_DEFAULT_REGION: "ap-southeast-1"
         with:
           ssm-path: /${{ env.BUILD_STAGE }}/${{ env.BUILD_APP }}/STAGING_ENV
           prefix: null
