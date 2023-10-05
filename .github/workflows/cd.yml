@@ -100,6 +100,18 @@ jobs:
             exit 1
           fi
 
+      - name: Create and populate ebextensions security group config file
+        run: |
+          cat <<EOF > .ebextensions/security-group.config
+          option_settings:
+            aws:elbv2:loadbalancer:
+              ManagedSecurityGroup: ${{ env.ELB_MANAGED_SECURITY_GROUP_ID }}
+              SecurityGroups: ${{ env.ELB_MANAGED_SECURITY_GROUP_ID }}
+
+            aws:autoscaling:launchconfiguration:
+              SecurityGroups: ${{ env.EBS_MANAGED_SECURITY_GROUP_NAME }}
+          EOF
+
       # - name: Get Elastic Beanstalk blue environment name
       #   id: target-blue-env
       #   run: |
