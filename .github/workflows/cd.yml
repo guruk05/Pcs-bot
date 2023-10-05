@@ -93,42 +93,6 @@ jobs:
             ebs_env_cname=$(eb status $ebs_env | grep "CNAME:" | awk '{print $2}')
             [ "$ebs_env_cname" = testing-backend-env-a.eba-spn44min.ap-southeast-1.elasticbeanstalk.com ] && blue_env_name="$ebs_env" >> $GITHUB_OUTPUT
           done
-
-          echo "$blue_env_name"
+          
           [ -z "$blue_env_name" ] && { echo "Elastic beanstalk blue environment not found"; }
-
-      # - name: Elastic Beanstalk Health Check
-      #   run: |
-      #     eb health ${{ env.AWS_EBS_ENVIRONMENT }} | awk 'NR>2 && $2 == "ok" {getline; if ($2 == 0) {exit_status=0}} END {exit exit_status}'
-      #     exit_status=$?
-
-      # - name: Retry Step
-      #   id: retry
-      #   run: |
-      #       retry_count=0
-      #       while [ $retry_count -lt 2 ]; do
-      #         health_code=$(eb health testing | awk 'NR==4 && $2=="ok" {getline; if ($2==1) {health_code=1} else {health_code=0}}; END {print health_code}')
-      #         echo "Health Code: $health_code"
-      #         if [ "$health_code" -eq 1 ]; then
-      #           echo "Server health: ok"
-      #           exit 0
-      #         elif [ "$health_code" -eq 0 ]; then
-      #           echo "Server health: not ok, retry in 90 seconds"
-      #           sleep 10
-      #           retry_count=$((retry_count + 1))
-      #         else
-      #           echo "Invalid health code"
-      #           exit 1
-      #         fi
-      #       done
-      #       echo "Server health: not ok"
-      #       exit 1
-
-
-
-
-
-
-
-
-
+          [ -n "$blue_env_name" ] && { echo "Elastic beanstalk blue environment "$blue_env_name" found"; }
