@@ -33,8 +33,10 @@ jobs:
           prefix: null
           decryption: true
           
-      # - name: Output Bardavon Actions
-      #   run: echo $STAGING_ENV
+      - name: Output Bardavon Actions
+        env:
+          CNAME: ${{ secrets.AWS_REGION }}
+        run: echo "$CNAME"
         
       # - name: Parse and set environment variables
       #   run: |
@@ -64,42 +66,42 @@ jobs:
       #   with:
       #     name: env-file
       #     path: .env
-      - name: Install EB CLI using pip
-        run: |
-          python -m pip install --upgrade pip
-          pip install awsebcli
+      # - name: Install EB CLI using pip
+      #   run: |
+      #     python -m pip install --upgrade pip
+      #     pip install awsebcli
 
-      - name: Initialize EB CLI
-        run: |
-          eb init ${{ env.AWS_EBS_APPLICATION }} --region ${{ env.AWS_DEFAULT_REGION }} --platform ${{ env.AWS_EBS_PLATFORM }}
-          eb use ${{ env.AWS_EBS_ENVIRONMENT }}
+      # - name: Initialize EB CLI
+      #   run: |
+      #     eb init ${{ env.AWS_EBS_APPLICATION }} --region ${{ env.AWS_DEFAULT_REGION }} --platform ${{ env.AWS_EBS_PLATFORM }}
+      #     eb use ${{ env.AWS_EBS_ENVIRONMENT }}
 
       # - name: Elastic Beanstalk Health Check
       #   run: |
       #     eb health ${{ env.AWS_EBS_ENVIRONMENT }} | awk 'NR>2 && $2 == "ok" {getline; if ($2 == 0) {exit_status=0}} END {exit exit_status}'
       #     exit_status=$?
 
-      - name: Retry Step
-        id: retry
-        run: |
-            retry_count=0
-            while [ $retry_count -lt 2 ]; do
-              health_code=$(eb health testing | awk 'NR==4 && $2=="ok" {getline; if ($2==1) {health_code=1} else {health_code=0}}; END {print health_code}')
-              echo "Health Code: $health_code"
-              if [ "$health_code" -eq 1 ]; then
-                echo "Server health: ok"
-                exit 0
-              elif [ "$health_code" -eq 0 ]; then
-                echo "Server health: not ok, retry in 90 seconds"
-                sleep 10
-                retry_count=$((retry_count + 1))
-              else
-                echo "Invalid health code"
-                exit 1
-              fi
-            done
-            echo "Server health: not ok"
-            exit 1
+      # - name: Retry Step
+      #   id: retry
+      #   run: |
+      #       retry_count=0
+      #       while [ $retry_count -lt 2 ]; do
+      #         health_code=$(eb health testing | awk 'NR==4 && $2=="ok" {getline; if ($2==1) {health_code=1} else {health_code=0}}; END {print health_code}')
+      #         echo "Health Code: $health_code"
+      #         if [ "$health_code" -eq 1 ]; then
+      #           echo "Server health: ok"
+      #           exit 0
+      #         elif [ "$health_code" -eq 0 ]; then
+      #           echo "Server health: not ok, retry in 90 seconds"
+      #           sleep 10
+      #           retry_count=$((retry_count + 1))
+      #         else
+      #           echo "Invalid health code"
+      #           exit 1
+      #         fi
+      #       done
+      #       echo "Server health: not ok"
+      #       exit 1
 
 
 
