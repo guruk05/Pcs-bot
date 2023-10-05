@@ -1,47 +1,47 @@
-name: Retrieve SSM Parameter
+# name: Retrieve SSM Parameter
 
-on:
-  push:
-    branches:
-      - main
+# on:
+#   push:
+#     branches:
+#       - main
 
-jobs:
-  retrieve-parameter:
-    runs-on: ubuntu-latest
+# jobs:
+#   retrieve-parameter:
+#     runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v2
 
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+#       - name: Configure AWS Credentials
+#         uses: aws-actions/configure-aws-credentials@v1
+#         with:
+#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Install AWS CLI
-        run: |
-          pip install awscli
-          aws --version
+#       - name: Install AWS CLI
+#         run: |
+#           pip install awscli
+#           aws --version
 
-      - name: Retrieve SSM Parameter
-        id: ssm-parameter
-        run: |
-          parameter_name=/staging/backend/STAGING_ENV
-          encrypted_value=$(aws ssm get-parameter --name $parameter_name --query "Parameter.Value" --output text)
-          decrypted_value=$(aws kms decrypt --ciphertext-blob fileb://<(echo $encrypted_value | base64 --decode) --output text --query Plaintext | base64 --decode)
-          echo "Decrypted SSM parameter value: $decrypted_value"
+#       - name: Retrieve SSM Parameter
+#         id: ssm-parameter
+#         run: |
+#           parameter_name=/staging/backend/STAGING_ENV
+#           encrypted_value=$(aws ssm get-parameter --name $parameter_name --query "Parameter.Value" --output text)
+#           decrypted_value=$(aws kms decrypt --ciphertext-blob fileb://<(echo $encrypted_value | base64 --decode) --output text --query Plaintext | base64 --decode)
+#           echo "Decrypted SSM parameter value: $decrypted_value"
 
-          # Set the SSM parameter as an output for later steps
-          echo "::set-output name=parameter_value::$decrypted_value"
+#           # Set the SSM parameter as an output for later steps
+#           echo "::set-output name=parameter_value::$decrypted_value"
 
-  use-parameter:
-    needs: retrieve-parameter
+#   use-parameter:
+#     needs: retrieve-parameter
 
-    runs-on: ubuntu-latest
+#     runs-on: ubuntu-latest
 
-    steps:
-      - name: Print SSM Parameter Value
-        run: |
-          echo "Retrieved SSM parameter value: ${{ needs.retrieve-parameter.outputs.parameter_value }}"
+#     steps:
+#       - name: Print SSM Parameter Value
+#         run: |
+#           echo "Retrieved SSM parameter value: ${{ needs.retrieve-parameter.outputs.parameter_value }}"
