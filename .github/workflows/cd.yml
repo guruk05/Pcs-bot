@@ -87,16 +87,31 @@ jobs:
       - name: Get Elastic Beanstalk blue environment name
         id: target-blue-env
         run: |
-          echo ${{ env.CNAME }}
           for ebs_env in $(eb list | awk '{print $1}'); do
             ebs_env_cname=$(eb status $ebs_env | grep "CNAME:" | awk '{print $2}')
             [ "$ebs_env_cname" = ${{ env.CNAME }} ] && blue_env_name="$ebs_env" >> $GITHUB_OUTPUT
           done
-          
+
           if [ -n "$blue_env_name" ]; then
             echo "Blue environment found: $blue_env_name"
           else
-            echo "Elastic beanstalk blue environment not found"
+            echo "Elastic Beanstalk blue environment for: ${{ env.NODE_ENV }} not found"
             exit 1
           fi
+
+      # - name: Get Elastic Beanstalk blue environment name
+      #   id: target-blue-env
+      #   run: |
+      #     echo ${{ env.CNAME }}
+      #     for ebs_env in $(eb list | awk '{print $1}'); do
+      #       ebs_env_cname=$(eb status $ebs_env | grep "CNAME:" | awk '{print $2}')
+      #       [ "$ebs_env_cname" = ${{ env.CNAME }} ] && blue_env_name="$ebs_env" >> $GITHUB_OUTPUT
+      #     done
+          
+      #     if [ -n "$blue_env_name" ]; then
+      #       echo "Blue environment found: $blue_env_name"
+      #     else
+      #       echo "Elastic beanstalk blue environment not found"
+      #       exit 1
+      #     fi
 
