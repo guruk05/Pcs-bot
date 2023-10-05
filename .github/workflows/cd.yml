@@ -35,7 +35,7 @@ jobs:
           
       - name: Output Bardavon Actions
         env:
-          CNAME: ${{ secrets.AWS_REGION }}
+          CNAME: ${{ env.AWS_DEFAULT_REGION }}
         run: | 
           echo "$CNAME"
           echo ${{ secrets.AWS_REGION }}
