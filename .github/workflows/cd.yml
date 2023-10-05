@@ -95,7 +95,7 @@ jobs:
           done
 
           echo "$blue_env_name"
-          [ -z "$blue_env_name" ] && { echo "Elastic beanstalk blue environment not found"; exit 1; }
+          [ -z "$blue_env_name" ] && { echo "Elastic beanstalk blue environment not found"; }
 
       # - name: Elastic Beanstalk Health Check
       #   run: |
