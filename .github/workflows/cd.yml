@@ -102,6 +102,7 @@ jobs:
 
       - name: Create and populate ebextensions security group config file
         run: |
+          mkdir -p .ebextensions
           cat <<EOF > .ebextensions/security-group.config
           option_settings:
             aws:elbv2:loadbalancer:
