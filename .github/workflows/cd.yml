@@ -86,8 +86,6 @@ jobs:
 
       - name: Get Elastic Beanstalk blue environment name
         id: target-blue-env
-        env:
-          CNAME: ${{ env.AWS_DEFAULT_REGION }}
         run: |
           echo ${{ env.CNAME }}
           for ebs_env in $(eb list | awk '{print $1}'); do
