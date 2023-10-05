@@ -44,6 +44,20 @@ jobs:
           else
             echo "false"
           fi
+          
+      - name: Get Elastic Beanstalk blue environment name
+        id: target-blue-env
+        env:
+          CNAME: ${{ env.AWS_DEFAULT_REGION }}
+        run: |
+          for ebs_env in $(eb list | awk '{print $1}'); do
+            echo "$ebs_env"
+            ebs_env_cname=$(eb status $ebs_env | grep "CNAME:" | awk '{print $2}')
+            [ "$ebs_env_cname" = "$CNAME" ] && blue_env_name="$ebs_env" >> $GITHUB_OUTPUT
+          done
+
+          [ -z "$blue_env_name" ] && { echo "Elastic beanstalk blue environment not found"; exit 1; }
+
 
       # - name: Parse and set environment variables
       #   run: |
