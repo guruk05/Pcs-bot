@@ -29,7 +29,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
         with:
-          ssm-path: /${{ env.BUILD_STAGE }}/${{ env.BUILD_APP }}/STAGING_ENV
+          ssm-path: /${{ env.BUILD_STAGE }}/${{ env.BUILD_APP }}/test
           prefix: null
           decryption: true
           
@@ -89,9 +89,10 @@ jobs:
         env:
           CNAME: ${{ env.AWS_DEFAULT_REGION }}
         run: |
+          echo ${{ env.CNAME }}
           for ebs_env in $(eb list | awk '{print $1}'); do
             ebs_env_cname=$(eb status $ebs_env | grep "CNAME:" | awk '{print $2}')
-            [ "$ebs_env_cname" = testing-backend-env-a.eba-spn44min.ap-southeast-1.elasticbeanstalk.com ] && blue_env_name="$ebs_env" >> $GITHUB_OUTPUT
+            [ "$ebs_env_cname" = ${{ env.CNAME }} ] && blue_env_name="$ebs_env" >> $GITHUB_OUTPUT
           done
           
           if [ -n "$blue_env_name" ]; then
