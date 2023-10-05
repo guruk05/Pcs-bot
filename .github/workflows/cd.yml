@@ -38,8 +38,8 @@ jobs:
           CNAME: ${{ env.AWS_DEFAULT_REGION }}
         run: | 
           echo "$CNAME"
-          echo ${{ secrets.AWS_REGION }}
-          if [ "$REGION" = 'ap-southeast-1' ]; then
+          echo ${{ env.AWS_DEFAULT_REGION }}
+          if [ "$REGION" = "ap-southeast-1" ]; then
             echo "true"
           else
             echo "false"
