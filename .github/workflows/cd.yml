@@ -120,7 +120,7 @@ jobs:
       - name: Create Elastic Beanstalk green environment and deploy
         id: target-green-env
         run: |
-          echo "green_env_name=${{ env.NODE_ENV }}-${{ github.run_id }}-${{ github.run_attempt }}"
+          echo "green_env_name=$(${{ env.NODE_ENV }}-${{ github.run_id }}-${{ github.run_attempt }})"
           echo "green_env_name:" "$green_env_name"
           echo "rsha:" $(git rev-parse --short HEAD)
           echo "sha:" ${{ github.sha }}
