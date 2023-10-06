@@ -124,6 +124,6 @@ jobs:
           echo "green_env_name: $green_env_name"
           echo "rsha:" $(git rev-parse --short HEAD)
           echo "sha:" ${{ github.sha }}
-          # eb create staging-6426472992-1 --cfg ${{ env.NODE_ENV }} --sample --instance-types t2.micro,t2.small
+          eb create "$green_env_name" --cfg ${{ env.NODE_ENV }} --sample --instance-types t2.micro,t2.small
 
 
