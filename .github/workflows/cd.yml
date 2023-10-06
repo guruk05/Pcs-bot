@@ -119,24 +119,8 @@ jobs:
       - name: Create Elastic Beanstalk green environment and deploy
         id: target-green-env
         run: |
-          echo "green_env_name=${{ env.NODE_ENV }}-$(git rev-parse --short HEAD)-${{ github.run_id }}-${{ github.run_attempt }}" >> $GITHUB_OUTPUT
+          echo "green_env_name=${{ env.NODE_ENV }}-${{ github.run_id }}-${{ github.run_attempt }}" >> $GITHUB_OUTPUT
           echo "$green_env_name"
           eb create "$green_env_name" --cfg ${{ env.NODE_ENV }} --sample --instance-types t2.micro,t2.small
 
 
-      # - name: Get Elastic Beanstalk blue environment name
-      #   id: target-blue-env
-      #   run: |
-      #     echo ${{ env.CNAME }}
-      #     for ebs_env in $(eb list | awk '{print $1}'); do
-      #       ebs_env_cname=$(eb status $ebs_env | grep "CNAME:" | awk '{print $2}')
-      #       [ "$ebs_env_cname" = ${{ env.CNAME }} ] && blue_env_name="$ebs_env" >> $GITHUB_OUTPUT
-      #     done
-          
-      #     if [ -n "$blue_env_name" ]; then
-      #       echo "Blue environment found: $blue_env_name"
-      #     else
-      #       echo "Elastic beanstalk blue environment not found"
-      #       exit 1
-      #     fi
-      # 
