@@ -116,7 +116,7 @@ jobs:
       - name: Create Elastic Beanstalk green environment and deploy
         id: target-green-env
         run: |
-          echo "green_env_name"=${{ env.NODE_ENV }}-${GITHUB_SHA::5}-${{ github.run_id }}-${{ github.run_attempt }} >> $GITHUB_OUTPUT
+          echo "green_env_name"=${{ env.NODE_ENV }}-$(git log --format=%h -1)-${{ github.run_id }}-${{ github.run_attempt }} >> $GITHUB_OUTPUT
           echo "$green_env_name"
           eb create "$green_env_name" --cfg ${{ env.NODE_ENV }} --sample --instance-types t2.micro,t2.small
 
