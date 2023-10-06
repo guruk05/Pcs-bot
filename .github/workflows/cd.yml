@@ -113,6 +113,14 @@ jobs:
               SecurityGroups: ${{ env.EBS_MANAGED_SECURITY_GROUP_NAME }}
           EOF
 
+      - name: Create Elastic Beanstalk green environment and deploy
+        id: target-green-env
+        run: |
+          echo "green_env_name"=${{ env.NODE_ENV }}-${GITHUB_SHA::5}-${{ github.run_id }}-${{ github.run_attempt }} >> $GITHUB_OUTPUT
+          echo "$green_env_name"
+          eb create "$green_env_name" --cfg ${{ env.NODE_ENV }} --sample --instance-types t2.micro,t2.small
+
+
       # - name: Get Elastic Beanstalk blue environment name
       #   id: target-blue-env
       #   run: |
