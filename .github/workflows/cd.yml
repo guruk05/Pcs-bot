@@ -91,7 +91,7 @@ jobs:
           for ebs_env in $(eb list | awk '{print $1}'); do
             ebs_env_cname=$(eb status $ebs_env | grep "CNAME:" | awk '{print $2}')
             echo "$ebs_env_cname"
-            [ "$ebs_env_cname" = ${{ env.CNAME }} ] && echo "blue_env_name="$ebs_env"" >> $GITHUB_OUTPUT
+            [ "$ebs_env_cname" = ${{ env.CNAME }} ] && echo "blue_env_name=$("$ebs_env")" >> $GITHUB_OUTPUT
           done
 
           if [ -n "$blue_env_name" ]; then
