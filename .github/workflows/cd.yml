@@ -126,4 +126,5 @@ jobs:
           echo "sha:" ${{ github.sha }}
           eb create "$green_env_name" --cfg ${{ env.NODE_ENV }} --sample --instance-types t2.micro,t2.small
 
-
+      - name: Print green env name
+        run: echo ${{ steps.target-green-env.outputs.green_env_name }}
