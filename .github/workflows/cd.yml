@@ -90,6 +90,7 @@ jobs:
         run: |
           for ebs_env in $(eb list | awk '{print $1}'); do
             ebs_env_cname=$(eb status $ebs_env | grep "CNAME:" | awk '{print $2}')
+            echo "$ebs_env_cname"
             [ "$ebs_env_cname" = ${{ env.CNAME }} ] && blue_env_name="$ebs_env" >> $GITHUB_OUTPUT
           done
 
@@ -119,8 +120,10 @@ jobs:
       - name: Create Elastic Beanstalk green environment and deploy
         id: target-green-env
         run: |
-          echo "green_env_name=${{ env.NODE_ENV }}-${{ github.run_id }}-${{ github.run_attempt }}" >> $GITHUB_OUTPUT
+          echo "green_env_name=${{ env.NODE_ENV }}-${{ github.run_id }}-${{ github.run_attempt }}"
           echo "$green_env_name"
-          eb create staging-6426472992-1 --cfg ${{ env.NODE_ENV }} --sample --instance-types t2.micro,t2.small
+          echo $(git rev-parse --short HEAD)
+          echo ${{ github.sha }}
+          # eb create staging-6426472992-1 --cfg ${{ env.NODE_ENV }} --sample --instance-types t2.micro,t2.small
 
 
