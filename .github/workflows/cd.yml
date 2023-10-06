@@ -113,10 +113,13 @@ jobs:
               SecurityGroups: ${{ env.EBS_MANAGED_SECURITY_GROUP_NAME }}
           EOF
 
+      - id: get_last_commit_hash
+        run: echo "last_commit_hash=$(git log --format=%h -n 1 ${{ github.event.after }} | head -1)" >> $GITHUB_OUTPUT
+
       - name: Create Elastic Beanstalk green environment and deploy
         id: target-green-env
         run: |
-          echo "green_env_name"=${{ env.NODE_ENV }}-$(git log --format=%h -n 1 ${{ github.event.after }} | head -1)-${{ github.run_id }}-${{ github.run_attempt }} >> $GITHUB_OUTPUT
+          echo "green_env_name"=${{ env.NODE_ENV }}-${{ steps.get_last_commit_hash.outputs.last_commit_hash }}-${{ github.run_id }}-${{ github.run_attempt }} >> $GITHUB_OUTPUT
           echo "$green_env_name"
           eb create "$green_env_name" --cfg ${{ env.NODE_ENV }} --sample --instance-types t2.micro,t2.small
 
