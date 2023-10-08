@@ -224,13 +224,13 @@ jobs:
         run: | 
           echo ${{ env.NODE_ENV }}
       
-      # - name: Deploy to Cloudflare Pages
-      #   uses: cloudflare/pages-action@v1
-      #   if: ${{ env.NODE_ENV != 'staging' }}
-      #   with:
-      #     apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      #     accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-      #     projectName: ${{ env.CLOUDFLARE_PROJECT_NAME}}
-      #     directory: ./dist/apps/piperks
-      #     wranglerVersion: '3'
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        if: ${{ env.NODE_ENV != 'staging' }}
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: ${{ env.CLOUDFLARE_PROJECT_NAME}}
+          directory: ./dist/apps/piperks
+          wranglerVersion: '3'
 
