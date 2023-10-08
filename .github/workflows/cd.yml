@@ -58,7 +58,7 @@ jobs:
 
       - name: Convert JSON
         run: |
-          input_data='${{ env.API_KEYS_JSON }}'
+          input_data="'${{ env.API_KEYS_JSON }}'"
           
           # JavaScript code for JSON conversion
           output=$(node -e "
