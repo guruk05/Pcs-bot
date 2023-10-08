@@ -186,7 +186,7 @@ jobs:
 
       - name: Swap cname and switch traffic to green environment
         run: |
-          eb swap ${{ steps.target-blue-env.outputs.blue_env_name }} ${{ steps.target-green-env.outputs.green_env_name }}
+          eb swap ${{ steps.target-blue-env.outputs.blue_env_name }} --destination_name ${{ steps.target-green-env.outputs.green_env_name }}
 
       - name: Terminate staging-blue environment
         if: ${{ env.NODE_ENV == 'staging' }}
