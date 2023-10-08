@@ -21,6 +21,7 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+      NODE_ENV: 'staging'
 
     steps:
       - name: Get environment variable from aws ssm
@@ -195,6 +196,7 @@ jobs:
           
   deploy_frontend:
     # needs: build
+    if: ${{ env.NODE_ENV != 'staging' }}
     name: Piperks Frontend Deployment
     runs-on: ubuntu-latest
 
