@@ -219,18 +219,15 @@ jobs:
           ssm-path: /${{ env.BUILD_STAGE }}/${{ env.BUILD_APP }}/test
           prefix: null
           decryption: true
-
-      - name: Print staging env name
-        run: | 
-          echo ${{ env.NODE_ENV }}
       
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/pages-action@v1
-        if: ${{ env.NODE_ENV != 'staging' }}
+        # if: ${{ env.NODE_ENV != 'staging' }}
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           projectName: ${{ env.CLOUDFLARE_PROJECT_NAME}}
           directory: ./dist/apps/piperks
+          branch: main
           wranglerVersion: '3'
 
