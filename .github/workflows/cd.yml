@@ -175,6 +175,7 @@ jobs:
         run: |
           latest_commit_sha=${{ github.event.pull_request.head.sha }}
           echo "green_env_name"=${{ env.NODE_ENV }}-${latest_commit_sha:0:8}-${{ github.run_id }}-${{ github.run_attempt }} >> $GITHUB_OUTPUT
+          echo "$green_env_name"
           eb create "$green_env_name" --cfg ${{ env.NODE_ENV }} --sample --instance-types t2.micro,t2.small
 
       - name: Print green env name
@@ -191,39 +192,39 @@ jobs:
         run: |
           eb terminate ${{ steps.target-blue-env.outputs.blue_env_name }}
           
-  deploy_frontend:
-    needs: build
-    name: Piperks Frontend Deployment
-    runs-on: ubuntu-latest
+  # deploy_frontend:
+  #   needs: build
+  #   name: Piperks Frontend Deployment
+  #   runs-on: ubuntu-latest
 
-    env:
-      AWS_SSM_BUILD_APP: 'web'
-      BUILD_APP: 'web'
-      BUILD_STAGE: 'staging'
+  #   env:
+  #     AWS_SSM_BUILD_APP: 'web'
+  #     BUILD_APP: 'web'
+  #     BUILD_STAGE: 'staging'
 
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-          ref: ${{ github.event.after }}
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #       with:
+  #         fetch-depth: 0
+  #         ref: ${{ github.event.after }}
 
-      - name: Get environment variable from aws ssm
-        uses: Bardavon-Health/actions-aws-ssm-params-to-env@v1.3
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
-        with:
-          ssm-path: /${{ env.BUILD_STAGE }}/${{ env.BUILD_APP }}/test
-          prefix: null
-          decryption: true
+  #     - name: Get environment variable from aws ssm
+  #       uses: Bardavon-Health/actions-aws-ssm-params-to-env@v1.3
+  #       env:
+  #         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  #         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+  #       with:
+  #         ssm-path: /${{ env.BUILD_STAGE }}/${{ env.BUILD_APP }}/test
+  #         prefix: null
+  #         decryption: true
 
-      - name: Deploy to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: ${{ env.CLOUDFLARE_PROJECT_NAME}}
-          directory: ./dist/apps/piperks
-          wranglerVersion: '3'
+  #     - name: Deploy to Cloudflare Pages
+  #       uses: cloudflare/pages-action@v1
+  #       with:
+  #         apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+  #         accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+  #         projectName: ${{ env.CLOUDFLARE_PROJECT_NAME}}
+  #         directory: ./dist/apps/piperks
+  #         wranglerVersion: '3'
 
