@@ -95,7 +95,7 @@ jobs:
             [ "$ebs_env_cname" = ${{ env.CNAME }} ] && blue_env_name="$ebs_env" 
           done
 
-          echo "$blue_env_name" >> $GITHUB_OUTPUT
+          echo "blue_env_name=$blue_env_name" >> $GITHUB_OUTPUT
           echo "blue_env_name:" "$blue_env_name"
           if [ -n "$blue_env_name" ]; then
             echo "Blue environment found: $blue_env_name"
