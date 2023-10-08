@@ -72,7 +72,7 @@ jobs:
             console.log(apiKeysJson);
           ")
           
-          echo "Output JSON: $output"
+          echo "parsed_api_keys JSON: $parsed_api_keys"
           echo "PARSED_API_KEYS=$parsed_api_keys_json" >> $GITHUB_ENV
 
       - name: Print Parsed API keys JSON
