@@ -175,6 +175,7 @@ jobs:
         run: |
           latest_commit_sha=${{ github.event.pull_request.head.sha }}
           green_env_name=${{ env.NODE_ENV }}-${latest_commit_sha:0:8}-${{ github.run_id }}-${{ github.run_attempt }}
+          echo "$green_env_name"
           echo "$green_env_name=$green_env_name" >> $GITHUB_OUTPUT
           # eb create "$green_env_name" --cfg ${{ env.NODE_ENV }} --sample --instance-types t2.micro,t2.small
 
