@@ -177,55 +177,55 @@ jobs:
           green_env_name=${{ env.NODE_ENV }}-${latest_commit_sha:0:8}-${{ github.run_id }}-${{ github.run_attempt }}
           echo "$green_env_name"
           echo "green_env_name=$green_env_name" >> $GITHUB_OUTPUT
-          # eb create "$green_env_name" --cfg ${{ env.NODE_ENV }} --sample --instance-types t2.micro,t2.small
+          eb create "$green_env_name" --cfg ${{ env.NODE_ENV }} --sample --instance-types t2.micro,t2.small
 
       - name: Print green env name
         run: | 
           echo "green_env_name:" ${{ steps.target-green-env.outputs.green_env_name }}
           echo "blue_env_name:" ${{ steps.target-blue-env.outputs.blue_env_name }}
 
-      # - name: Swap cname and switch traffic to green environment
-      #   run: |
-      #     eb swap ${{ steps.target-blue-env.outputs.blue_env_name }} ${{ steps.target-green-env.outputs.green_env_name }}
+      - name: Swap cname and switch traffic to green environment
+        run: |
+          eb swap ${{ steps.target-blue-env.outputs.blue_env_name }} ${{ steps.target-green-env.outputs.green_env_name }}
 
-      # - name: Terminate staging-blue environment
-      #   if: ${{ env.NODE_ENV == 'staging' }}
-      #   run: |
-      #     eb terminate ${{ steps.target-blue-env.outputs.blue_env_name }}
+      - name: Terminate staging-blue environment
+        if: ${{ env.NODE_ENV == 'staging' }}
+        run: |
+          eb terminate ${{ steps.target-blue-env.outputs.blue_env_name }}
           
-  # deploy_frontend:
-  #   needs: build
-  #   name: Piperks Frontend Deployment
-  #   runs-on: ubuntu-latest
+  deploy_frontend:
+    needs: build
+    name: Piperks Frontend Deployment
+    runs-on: ubuntu-latest
 
-  #   env:
-  #     AWS_SSM_BUILD_APP: 'web'
-  #     BUILD_APP: 'web'
-  #     BUILD_STAGE: 'staging'
+    env:
+      AWS_SSM_BUILD_APP: 'web'
+      BUILD_APP: 'web'
+      BUILD_STAGE: 'staging'
 
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #       with:
-  #         fetch-depth: 0
-  #         ref: ${{ github.event.after }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.after }}
 
-  #     - name: Get environment variable from aws ssm
-  #       uses: Bardavon-Health/actions-aws-ssm-params-to-env@v1.3
-  #       env:
-  #         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  #         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  #         AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
-  #       with:
-  #         ssm-path: /${{ env.BUILD_STAGE }}/${{ env.BUILD_APP }}/test
-  #         prefix: null
-  #         decryption: true
+      - name: Get environment variable from aws ssm
+        uses: Bardavon-Health/actions-aws-ssm-params-to-env@v1.3
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+        with:
+          ssm-path: /${{ env.BUILD_STAGE }}/${{ env.BUILD_APP }}/test
+          prefix: null
+          decryption: true
 
-  #     - name: Deploy to Cloudflare Pages
-  #       uses: cloudflare/pages-action@v1
-  #       with:
-  #         apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-  #         accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-  #         projectName: ${{ env.CLOUDFLARE_PROJECT_NAME}}
-  #         directory: ./dist/apps/piperks
-  #         wranglerVersion: '3'
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: ${{ env.CLOUDFLARE_PROJECT_NAME}}
+          directory: ./dist/apps/piperks
+          wranglerVersion: '3'
 
