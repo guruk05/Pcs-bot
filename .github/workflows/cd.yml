@@ -195,7 +195,6 @@ jobs:
           
   deploy_frontend:
     needs: build
-    if: ${{ env.NODE_ENV != 'staging' }}
     name: Piperks Frontend Deployment
     runs-on: ubuntu-latest
 
@@ -223,6 +222,7 @@ jobs:
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/pages-action@v1
+        if: ${{ env.NODE_ENV != 'staging' }}
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
