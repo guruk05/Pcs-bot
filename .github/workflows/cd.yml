@@ -191,7 +191,7 @@ jobs:
       - name: Terminate staging-blue environment
         if: ${{ env.NODE_ENV == 'staging' }}
         run: |
-          eb terminate staging-48ee8123-6447407705
+          eb terminate staging-48ee8123-6447407705 --force
           
   # deploy_frontend:
   #   needs: build
