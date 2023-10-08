@@ -117,22 +117,20 @@ jobs:
               SecurityGroups: ${{ env.EBS_MANAGED_SECURITY_GROUP_NAME }}
           EOF
 
-      - id: get_last_commit_hash
-        run: | 
-          echo "last_commit_hash=$(git log --format=%h -n 1 ${{ github.event.after }} | head -1)" >> $GITHUB_OUTPUT
-          echo ${{github.event.pull_request.head.sha}}
-          latest_commit_sha=${{ github.event.pull_request.head.sha }}
-          first_eight_chars="${latest_commit_sha:0:8}"
-          echo "First 8 characters of SHA: $first_eight_chars"
+      # - id: get_last_commit_hash
+      #   run: | 
+      #     echo "last_commit_hash=$(git log --format=%h -n 1 ${{ github.event.after }} | head -1)" >> $GITHUB_OUTPUT
+      #     echo ${{github.event.pull_request.head.sha}}
+      #     latest_commit_sha=${{ github.event.pull_request.head.sha }}
+      #     first_eight_chars="${latest_commit_sha:0:8}"
+      #     echo "First 8 characters of SHA: $first_eight_chars"
 
           
       - name: Create Elastic Beanstalk green environment and deploy
         id: target-green-env
         run: |
-          echo "green_env_name=${{ env.NODE_ENV }}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" >> $GITHUB_OUTPUT
-          echo "green_env_name: $green_env_name"
-          echo "rsha:" $(git rev-parse --short HEAD)
-          echo "sha:" ${{ github.sha }}
+          latest_commit_sha=${{ github.event.pull_request.head.sha }}
+          echo "green_env_name"=${{ env.NODE_ENV }}-${latest_commit_sha:0:8}-${{ github.run_id }}-${{ github.run_attempt }} >> $GITHUB_OUTPUT
           # eb create "$green_env_name" --cfg ${{ env.NODE_ENV }} --sample --instance-types t2.micro,t2.small
 
       - name: Print green env name
