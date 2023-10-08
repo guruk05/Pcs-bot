@@ -73,7 +73,7 @@ jobs:
           ")
           
           echo "parsed_api_keys JSON: $parsed_api_keys"
-          echo "PARSED_API_KEYS=$parsed_api_keys_json" >> $GITHUB_ENV
+          echo "PARSED_API_KEYS=$parsed_api_keys" >> $GITHUB_ENV
 
       - name: Print Parsed API keys JSON
         run: echo ${{ env.PARSED_API_KEYS }}
