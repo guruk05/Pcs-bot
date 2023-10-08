@@ -126,16 +126,16 @@ jobs:
           echo "First 8 characters of SHA: $first_eight_chars"
 
           
-      # - name: Create Elastic Beanstalk green environment and deploy
-      #   id: target-green-env
-      #   run: |
-      #     echo "green_env_name=${{ env.NODE_ENV }}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" >> $GITHUB_OUTPUT
-      #     echo "green_env_name: $green_env_name"
-      #     echo "rsha:" $(git rev-parse --short HEAD)
-      #     echo "sha:" ${{ github.sha }}
-      #     # eb create "$green_env_name" --cfg ${{ env.NODE_ENV }} --sample --instance-types t2.micro,t2.small
+      - name: Create Elastic Beanstalk green environment and deploy
+        id: target-green-env
+        run: |
+          echo "green_env_name=${{ env.NODE_ENV }}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" >> $GITHUB_OUTPUT
+          echo "green_env_name: $green_env_name"
+          echo "rsha:" $(git rev-parse --short HEAD)
+          echo "sha:" ${{ github.sha }}
+          # eb create "$green_env_name" --cfg ${{ env.NODE_ENV }} --sample --instance-types t2.micro,t2.small
 
       - name: Print green env name
         run: | 
           echo "green_env_name:" ${{ steps.target-green-env.outputs.green_env_name }}
-          echo "blue_env_name:" ${{ steps.target-green-env.outputs.blue_env_name }}
+          echo "blue_env_name:" ${{ steps.target-blue-env.outputs.blue_env_name }}
