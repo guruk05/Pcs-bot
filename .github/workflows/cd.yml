@@ -195,7 +195,7 @@ jobs:
           
   deploy_frontend:
     needs: build
-    if: ${{ env.NODE_ENV }} != 'staging'
+    if: ${{ env.NODE_ENV != 'staging' }}
     name: Piperks Frontend Deployment
     runs-on: ubuntu-latest
 
