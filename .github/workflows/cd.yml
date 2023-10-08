@@ -121,6 +121,10 @@ jobs:
         run: | 
           echo "last_commit_hash=$(git log --format=%h -n 1 ${{ github.event.after }} | head -1)" >> $GITHUB_OUTPUT
           echo ${{github.event.pull_request.head.sha}}
+          latest_commit_sha="${{ github.event.pull_request.head.sha }}"
+          first_eight_chars="${latest_commit_sha:0:8}"
+          echo "First 8 characters of SHA: $first_eight_chars"
+
           
       # - name: Create Elastic Beanstalk green environment and deploy
       #   id: target-green-env
