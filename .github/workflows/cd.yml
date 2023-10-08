@@ -129,7 +129,7 @@ jobs:
           # TODO: Retrieve API KEYS JSON from the SSM for dynamic configuration.
           # Note: Bardavon-Health/actions-aws-ssm-params-to-env@v1.2 currently does not handle nested JSON properties properly,
           # causing formatting issues, investigate this further to use keys from SSM.
-          envkey_API_KEYS_JSON: ${{ env.API_KEYS_JSON }}
+          envkey_API_KEYS_JSON: ${{ env.PARSED_API_KEYS }}
           envkey_JWT_EXPIRY: ${{ env.JWT_EXPIRY }}
           envkey_JWT_SECRET: ${{ env.JWT_SECRET }}
           envkey_JWT_AUDIENCE: ${{ env.JWT_AUDIENCE }}
