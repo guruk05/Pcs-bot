@@ -68,7 +68,8 @@ jobs:
               const [keyName, keyValue] = key.split(':');
               apiKeysObj[keyName] = keyValue;
             });
-            console.log(JSON.stringify(apiKeysObj));
+            const apiKeysJson = JSON.stringify(apiKeysObj);
+            console.log(apiKeysJson);
           ")
           
           echo "Output JSON: $output"
