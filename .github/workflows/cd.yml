@@ -60,20 +60,22 @@ jobs:
         run: |
           input_data="'${{ env.API_KEYS_JSON }}'"
           
-          # JavaScript code for JSON conversion
-          output=$(node -e "
+          # JS code for parsing api keys 
+            parsed_api_keys=$(node -e "
             const apiKeyPairs = $input_data.slice(1, -1).split(',');
             const apiKeysObj = {};
             apiKeyPairs.forEach((key) => {
               const [keyName, keyValue] = key.split(':');
               apiKeysObj[keyName] = keyValue;
             });
-            const jsonString = JSON.stringify(apiKeysObj);
-            console.log(jsonString);
+            console.log(`'${JSON.stringify(apiKeysObj)}'`);
           ")
           
           echo "Output JSON: $output"
+          echo "PARSED_API_KEYS=$parsed_api_keys_json" >> $GITHUB_ENV
 
+      - name: Print Parsed API keys JSON
+        run: echo ${{ env.PARSED_API_KEYS }}
       # - name: Parse and set environment variables
       #   run: |
       #     echo "${{ env.API_KEYS_JSON }}" > keys.json
