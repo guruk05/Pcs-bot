@@ -117,6 +117,10 @@ jobs:
           envkey_API_DOCS_PATH: ${{ env.API_DOCS_PATH }}
           fail_on_empty: true
 
+      - name: Read .env file
+        run: |
+          cat .env
+
       # - name: Install EB CLI using pip
       #   run: |
       #     python -m pip install --upgrade pip
