@@ -50,6 +50,29 @@ jobs:
           else
             echo "false"
           fi
+          
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14
+
+      - name: Convert JSON
+        run: |
+          input_data="${{ env.API_KEYS_JSON }}"
+          
+          # JavaScript code for JSON conversion
+          output=$(node -e "
+            const apiKeyPairs = $input_data.slice(1, -1).split(',');
+            const apiKeysObj = {};
+            apiKeyPairs.forEach((key) => {
+              const [keyName, keyValue] = key.split(':');
+              apiKeysObj[keyName] = keyValue;
+            });
+            const jsonString = JSON.stringify(apiKeysObj);
+            console.log(jsonString);
+          ")
+          
+          echo "Output JSON: $output"
 
       # - name: Parse and set environment variables
       #   run: |
