@@ -235,7 +235,7 @@ jobs:
           decryption: true
       
       - name: Deploy to Cloudflare Pages
-        uses: cloudflare/pages-action@v1.5.0
+        uses: cloudflare/pages-action@v1
         # if: ${{ env.NODE_ENV != 'staging' }}
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
