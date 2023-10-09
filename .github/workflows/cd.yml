@@ -56,27 +56,27 @@ jobs:
         with:
           node-version: 14
 
-      - name: Convert JSON
-        run: |
-          input_data="'${{ env.API_KEYS_JSON }}'"
+      # - name: Convert JSON
+      #   run: |
+      #     input_data="'${{ env.API_KEYS_JSON }}'"
           
-          # JS code for parsing api keys 
-            parsed_api_keys=$(node -e "
-            const apiKeyPairs = $input_data.slice(1, -1).split(',');
-            const apiKeysObj = {};
-            apiKeyPairs.forEach((key) => {
-              const [keyName, keyValue] = key.split(':');
-              apiKeysObj[keyName] = keyValue;
-            });
-            const apiKeysJson = JSON.stringify(apiKeysObj);
-            console.log(apiKeysJson);
-          ")
+      #     # JS code for parsing api keys 
+      #       parsed_api_keys=$(node -e "
+      #       const apiKeyPairs = $input_data.slice(1, -1).split(',');
+      #       const apiKeysObj = {};
+      #       apiKeyPairs.forEach((key) => {
+      #         const [keyName, keyValue] = key.split(':');
+      #         apiKeysObj[keyName] = keyValue;
+      #       });
+      #       const apiKeysJson = JSON.stringify(apiKeysObj);
+      #       console.log(apiKeysJson);
+      #     ")
           
-          echo "parsed_api_keys JSON: $parsed_api_keys"
-          echo "PARSED_API_KEYS=$parsed_api_keys" >> $GITHUB_ENV
+      #     echo "parsed_api_keys JSON: $parsed_api_keys"
+      #     echo "PARSED_API_KEYS=$parsed_api_keys" >> $GITHUB_ENV
 
-      - name: Print Parsed API keys JSON
-        run: echo ${{ env.PARSED_API_KEYS }}
+      # - name: Print Parsed API keys JSON
+      #   run: echo ${{ env.PARSED_API_KEYS }}
       # - name: Parse and set environment variables
       #   run: |
       #     echo "${{ env.API_KEYS_JSON }}" > keys.json
@@ -146,6 +146,7 @@ jobs:
       - name: Read .env file
         run: |
           cat .env
+          echo "redis domain" ${{ env.REDIS_DOMAIN }}
 
       # - name: Install EB CLI using pip
       #   run: |
