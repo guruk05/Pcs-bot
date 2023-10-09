@@ -243,5 +243,5 @@ jobs:
           projectName: ${{ env.CLOUDFLARE_PROJECT_NAME}}
           directory: ./dist/apps/piperks
           branch: main
-          wranglerVersion: '3'
+          wranglerVersion: '2'
 
