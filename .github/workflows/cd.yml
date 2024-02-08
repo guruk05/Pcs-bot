@@ -125,12 +125,12 @@ jobs:
 
           echo "$blue_env_name"
           echo "blue_env_name=$blue_env_name" >> $GITHUB_OUTPUT
-          # if [ -n "$blue_env_name" ]; then
-          #   echo "Blue environment found: $blue_env_name"
-          # else
-          #   echo "Elastic Beanstalk blue environment for: ${{ inputs.environment }} not found"
-          #   exit 1
-          # fi
+          if [ -n "$blue_env_name" ]; then
+            echo "Blue environment found: $blue_env_name"
+          else
+            echo "Elastic Beanstalk blue environment for: ${{ inputs.environment }} not found"
+            exit 1
+          fi
 
       # - name: Initialize EB CLI
       #   run: |
