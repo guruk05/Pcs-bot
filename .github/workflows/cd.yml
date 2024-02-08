@@ -113,42 +113,8 @@ jobs:
 
       - name: Get Elastic Beanstalk blue environment name
         if: ${{ inputs.app-name != 'merchant-portal' }}
-        id: target-blue-env
         run: |
           eb list --all
-          # echo ebs_envs=$(eb list --all)
-          # echo "$ebs_envs"
-          # for ebs_env in $ebs_envs; do
-          #   ebs_env_cname=$(eb status $ebs_env | grep "CNAME:" | awk '{print $2}')
-          #   echo "$ebs_env_cname"
-          #   [ "$ebs_env_cname" = ${{ env.CNAME }} ] && blue_env_name="$ebs_env"
-          # done
-
-          # echo "$blue_env_name"
-          # echo "blue_env_name=$blue_env_name" >> $GITHUB_OUTPUT
-          # if [ -n "$blue_env_name" ]; then
-          #   echo "Blue environment found: $blue_env_name"
-          # else
-          #   echo "Elastic Beanstalk blue environment for: ${{ inputs.environment }} not found"
-          #   exit 1
-          # fi
-
-          # ebs_envs=$(eb list --all | awk '{if ($1 == "*") print $2; else print $1}')
-          # echo ${{ ebs_envs }}
-          # for ebs_env in $ebs_envs; do
-          #   ebs_env_cname=$(eb status $ebs_env | grep "CNAME:" | awk '{print $2}')
-          #   echo "$ebs_env_cname"
-          #   [ "$ebs_env_cname" = ${{ env.CNAME }} ] && blue_env_name="$ebs_env"
-          # done
-
-          # echo "$blue_env_name"
-          # echo "blue_env_name=$blue_env_name" >> $GITHUB_OUTPUT
-          # if [ -n "$blue_env_name" ]; then
-          #   echo "Blue environment found: $blue_env_name"
-          # else
-          #   echo "Elastic Beanstalk blue environment for: ${{ inputs.environment }} not found"
-          #   exit 1
-          # fi
 
       # - name: Initialize EB CLI
       #   run: |
