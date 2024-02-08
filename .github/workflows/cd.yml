@@ -114,7 +114,8 @@ jobs:
       - name: Get Elastic Beanstalk blue environment name
         if: ${{ inputs.app-name != 'merchant-portal' }}
         run: |
-          eb list --all
+          eb list --all > eb_list_output.txt
+          cat eb_list_output.txt
 
       # - name: Initialize EB CLI
       #   run: |
