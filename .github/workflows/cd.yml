@@ -113,10 +113,8 @@ jobs:
 
       - name: Get Elastic Beanstalk blue environment name
         id: target-blue-env
-        shell: bash
+        shell: sh
         run: |
-          #!/bin/bash
-
           ebs_envs=$(eb list --all | awk '{if ($1 == "*") print $2; else print $1}')
           echo "$ebs_envs"
           for ebs_env in $ebs_envs; do
