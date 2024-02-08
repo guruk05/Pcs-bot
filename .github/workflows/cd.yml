@@ -116,7 +116,7 @@ jobs:
         id: target-blue-env
         run: |
           ebs_envs=$(eb list --all | awk '{if ($1 == "*") print $2; else print $1}')
-          echo '${{ebs_envs}}'
+          echo '${ebs_envs}'
           for ebs_env in $ebs_envs; do
             ebs_env_cname=$(eb status $ebs_env | grep "CNAME:" | awk '{print $2}')
             echo "$ebs_env_cname"
