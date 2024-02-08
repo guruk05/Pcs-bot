@@ -30,30 +30,30 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Create CloudWatch Event Rule
-        run: |
-          aws events put-rule --name "ScheduledCleanupRule" \
-            --schedule-expression "rate(1 hour)"
+      # - name: Create CloudWatch Event Rule
+      #   run: |
+      #     aws events put-rule --name "ScheduledCleanupRule" \
+      #       --schedule-expression "rate(1 hour)"
 
-      - name: Add Lambda Target to the Rule
-        run: |
-          aws events put-targets --rule "ScheduledCleanupRule" \
-            --targets "Id"="1","Arn"=${{ vars.AWS_EBS_ENV_CLEANUP_LAMBDA_FUNCTION_ARN }}
+      # - name: Add Lambda Target to the Rule
+      #   run: |
+      #     aws events put-targets --rule "ScheduledCleanupRule" \
+      #       --targets "Id"="1","Arn"=${{ vars.AWS_EBS_ENV_CLEANUP_LAMBDA_FUNCTION_ARN }}
 
-      - name: Enable Rule
-        run: |
-          aws events enable-rule --name "ScheduledCleanupRule"
+      # - name: Enable Rule
+      #   run: |
+      #     aws events enable-rule --name "ScheduledCleanupRule"
 
-      # - name: Get environment variable from aws ssm
-      #   uses: Bardavon-Health/actions-aws-ssm-params-to-env@v1.2
-      #   env:
-      #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      #     AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
-      #   with:
-      #     ssm-path: /${{ env.BUILD_STAGE }}/${{ env.BUILD_APP }}/test
-      #     prefix: null
-      #     decryption: true
+      - name: Get environment variable from aws ssm
+        uses: Bardavon-Health/actions-aws-ssm-params-to-env@v1.2
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+        with:
+          ssm-path: /${{ env.BUILD_STAGE }}/${{ env.BUILD_APP }}/test
+          prefix: null
+          decryption: true
           
       # - name: Output Bardavon Actions
       #   env:
@@ -95,11 +95,42 @@ jobs:
       #   with:
       #     name: env-file
       #     path: .env
-      
-      # - name: Install EB CLI using pip
-      #   run: |
-      #     python -m pip install --upgrade pip
-      #     pip install awsebcli
+      - name: Install Python 3.9
+        if: ${{ inputs.app-name != 'merchant-portal' }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.9
+
+      - name: Install EB CLI using pip
+        run: |
+          python -m pip install --upgrade pip
+          pip install awsebcli
+
+      - name: Initialize EB CLI
+        if: ${{ inputs.app-name != 'merchant-portal' }}
+        run: |
+          eb init ${{ env.AWS_EBS_APPLICATION }} --region ${{ env.AWS_DEFAULT_REGION }} --platform ${{ env.AWS_EBS_PLATFORM }}
+
+      - name: Get Elastic Beanstalk blue environment name
+        if: ${{ inputs.app-name != 'merchant-portal' }}
+        id: target-blue-env
+        run: |
+          ebs_envs=$(eb list --all | awk '{if ($1 == "*") print $2; else print $1}')
+          echo "$ebs_envs"
+          for ebs_env in $ebs_envs; do
+            ebs_env_cname=$(eb status $ebs_env | grep "CNAME:" | awk '{print $2}')
+            echo "$ebs_env_cname"
+            [ "$ebs_env_cname" = ${{ env.CNAME }} ] && blue_env_name="$ebs_env"
+          done
+
+          echo "$blue_env_name"
+          echo "blue_env_name=$blue_env_name" >> $GITHUB_OUTPUT
+          if [ -n "$blue_env_name" ]; then
+            echo "Blue environment found: $blue_env_name"
+          else
+            echo "Elastic Beanstalk blue environment for: ${{ inputs.environment }} not found"
+            exit 1
+          fi
 
       # - name: Initialize EB CLI
       #   run: |
