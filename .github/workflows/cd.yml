@@ -132,6 +132,10 @@ jobs:
             exit 1
           fi
 
+      - name: list
+        shell: bash
+        run: ls
+
       # - name: Initialize EB CLI
       #   run: |
       #     eb init ${{ env.AWS_EBS_APPLICATION }} --region ${{ env.AWS_DEFAULT_REGION }} --platform ${{ env.AWS_EBS_PLATFORM }}
