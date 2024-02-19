@@ -43,6 +43,8 @@ jobs:
       # - name: Enable Rule
       #   run: |
       #     aws events enable-rule --name "ScheduledCleanupRule"
+      - name: Check Shell
+        run: echo $SHELL
 
       - name: Get environment variable from aws ssm
         uses: Bardavon-Health/actions-aws-ssm-params-to-env@v1.3
