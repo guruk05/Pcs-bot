@@ -85,5 +85,4 @@ jobs:
             else
               echo "deploy-to-partner-portal-production=false" >> $GITHUB_OUTPUT
             fi
-          else
           fi
