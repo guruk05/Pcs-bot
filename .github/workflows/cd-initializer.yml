@@ -28,8 +28,12 @@ jobs:
     outputs:
       apps-api-hash: ${{ steps.hash-calculation-all.outputs.apps-api-hash }}
       e2e-hash: ${{ steps.hash-calculation-all.outputs.apps-piperks-e2e-hash }}
-      deploy-to-production: ${{ steps.hash-calculation-specific.outputs.deploy-to-production }}
       deploy-to-sandbox: ${{ steps.last-commit-check.outputs.deploy-to-sandbox }}
+      deploy-to-production: ${{ steps.last-commit-check.outputs.deploy-to-production }}
+      deploy-to-demo: ${{ steps.last-commit-check.outputs.deploy-to-demo }}
+      deploy-to-partner-portal-sandbox: ${{ steps.last-commit-check.outputs.deploy-to-partner-portal-sandbox }}
+      deploy-to-partner-portal-demo: ${{ steps.last-commit-check.outputs.deploy-to-partner-portal-demo }}
+      deploy-to-partner-portal-production: ${{ steps.last-commit-check.outputs.deploy-to-partner-portal-production }}
     steps:
       - name: checkout
         uses: actions/checkout@v3
