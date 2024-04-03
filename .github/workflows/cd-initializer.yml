@@ -28,8 +28,8 @@ jobs:
     outputs:
       apps-api-hash: ${{ steps.hash-calculation-all.outputs.apps-api-hash }}
       e2e-hash: ${{ steps.hash-calculation-all.outputs.apps-piperks-e2e-hash }}
-      deploy-to-sandbox: ${{ steps.last-commit-check.outputs.deploy-to-sandbox }}
       deploy-to-production: ${{ steps.last-commit-check.outputs.deploy-to-production }}
+      deploy-to-sandbox: ${{ steps.last-commit-check.outputs.deploy-to-sandbox }}
       deploy-to-demo: ${{ steps.last-commit-check.outputs.deploy-to-demo }}
       deploy-to-partner-portal-sandbox: ${{ steps.last-commit-check.outputs.deploy-to-partner-portal-sandbox }}
       deploy-to-partner-portal-demo: ${{ steps.last-commit-check.outputs.deploy-to-partner-portal-demo }}
@@ -50,60 +50,40 @@ jobs:
           commit_message=$(echo "${{ steps.get_last_commit.outputs.message }}")
           echo "Commit message: $commit_message"
           if echo "$commit_message" | grep -q 'deploy'; then
-            echo "Found 'deploy' in commit message"
             if echo "$commit_message" | grep -q 'sandbox'; then
-              echo "Found 'sandbox' in commit message"
               echo "deploy-to-sandbox=true" >> $GITHUB_OUTPUT
             else
-              echo "Did not find 'sandbox' in commit message"
               echo "deploy-to-sandbox=false" >> $GITHUB_OUTPUT
             fi
 
             if echo "$commit_message" | grep -q 'demo'; then
-              echo "Found 'demo' in commit message"
               echo "deploy-to-demo=true" >> $GITHUB_OUTPUT
             else
-              echo "Did not find 'demo' in commit message"
               echo "deploy-to-demo=false" >> $GITHUB_OUTPUT
             fi
 
             if echo "$commit_message" | grep -q 'production'; then
-              echo "Found 'production' in commit message"
               echo "deploy-to-production=true" >> $GITHUB_OUTPUT
             else
-              echo "Did not find 'production' in commit message"
               echo "deploy-to-production=false" >> $GITHUB_OUTPUT
             fi
 
             if echo "$commit_message" | grep -q 'partner-portal-sandbox'; then
-              echo "Found 'partner-portal-sandbox' in commit message"
               echo "deploy-to-partner-portal-sandbox=true" >> $GITHUB_OUTPUT
             else
-              echo "Did not find 'partner-portal-sandbox' in commit message"
               echo "deploy-to-partner-portal-sandbox=false" >> $GITHUB_OUTPUT
             fi
 
             if echo "$commit_message" | grep -q 'partner-portal-demo'; then
-              echo "Found 'partner-portal-demo' in commit message"
               echo "deploy-to-partner-portal-demo=true" >> $GITHUB_OUTPUT
             else
-              echo "Did not find 'partner-portal-demo' in commit message"
               echo "deploy-to-partner-portal-demo=false" >> $GITHUB_OUTPUT
             fi
 
             if echo "$commit_message" | grep -q 'partner-portal-production'; then
-              echo "Found 'partner-portal-production' in commit message"
               echo "deploy-to-partner-portal-production=true" >> $GITHUB_OUTPUT
             else
-              echo "Did not find 'partner-portal-production' in commit message"
               echo "deploy-to-partner-portal-production=false" >> $GITHUB_OUTPUT
             fi
           else
-            echo "'deploy' not found in commit message. Exiting."
           fi
-
-  job2:
-    runs-on: ubuntu-latest
-    needs: last-commit-check
-    steps:
-    - run: "echo ${{needs.last-commit-check.outputs.deploy-to-sandbox}}"
