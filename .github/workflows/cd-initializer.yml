@@ -52,7 +52,7 @@ jobs:
             echo "Found 'deploy' in commit message"
             if echo "$commit_message" | grep -q 'sandbox'; then
               echo "Found 'sandbox' in commit message"
-              echo "deploy-to-sandbox=true" >> $GITHUB_OUTPUT
+              echo "deploy-to-sandbox=true" >> "$GITHUB_OUTPUT"
             else
               echo "Did not find 'sandbox' in commit message"
               echo "deploy-to-sandbox=false" >> $GITHUB_OUTPUT
