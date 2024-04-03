@@ -20,4 +20,4 @@ jobs:
     needs: check-commit-title
     steps:
       - name: checkout
-        run: echo "out var ${{ needs.check-commit-title.outputs }}"
+        run: echo "out var ${{ toJson(needs.check-commit-title.outputs) }}"
