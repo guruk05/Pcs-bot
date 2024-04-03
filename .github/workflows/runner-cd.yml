@@ -17,6 +17,7 @@ jobs:
 
   debug-log:
     runs-on: ubuntu-latest
+    needs: check-commit-title
     steps:
       - name: checkout
         run: echo "out var ${{ needs.check-commit-title.outputs.should-deploy-to-sandbox }}"
