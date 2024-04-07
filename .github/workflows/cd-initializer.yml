@@ -86,3 +86,12 @@ jobs:
               echo "deploy-to-partner-portal-production=false" >> $GITHUB_OUTPUT
             fi
           fi
+
+      - name: SSH into vps instance
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.IP }}
+          username: ubuntu
+          key: ${{ secrets.KEY }}
+          port: 22
+          script: whoami
