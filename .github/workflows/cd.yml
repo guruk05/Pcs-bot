@@ -23,6 +23,13 @@ jobs:
       AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
 
     steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
       - name: SSH into VPS instance and deploy backend
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -31,8 +38,14 @@ jobs:
           key: ${{ secrets.KEY }}
           port: 22
           script: |
-              whoami
-              ls -al
+            aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin 385788413454.dkr.ecr.ap-southeast-1.amazonaws.com/piperks
+            docker pull 385788413454.dkr.ecr.ap-southeast-1.amazonaws.com/piperks:8845b9f4248e8da523000f5f22ab01685706048d
+            # Stop existing container
+            echo "Stop running BE app server containers..."
+            if sudo docker ps --format "{{.ID}}" | grep -q .; then
+              sudo docker stop $(sudo docker ps -aq)
+            fi 
+            docker run --env-file .env -d -p 80:80 385788413454.dkr.ecr.ap-southeast-1.amazonaws.com/piperks:8845b9f4248e8da523000f5f22ab01685706048d
 
       # - name: Set up AWS CLI
       #   uses: aws-actions/configure-aws-credentials@v1
