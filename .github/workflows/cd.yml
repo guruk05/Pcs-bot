@@ -23,6 +23,15 @@ jobs:
       AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
 
     steps:
+      - name: SSH into VPS instance and deploy backend
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.IP }}
+          username: ${{ secrets.HOST }}
+          key: ${{ secrets.KEY }}
+          port: 22
+          script: whoami
+
       # - name: Set up AWS CLI
       #   uses: aws-actions/configure-aws-credentials@v1
       #   with:
@@ -43,19 +52,19 @@ jobs:
       # - name: Enable Rule
       #   run: |
       #     aws events enable-rule --name "ScheduledCleanupRule"
-      - name: Check Shell
-        run: echo $SHELL
+      # - name: Check Shell
+      #   run: echo $SHELL
 
-      - name: Get environment variable from aws ssm
-        uses: Bardavon-Health/actions-aws-ssm-params-to-env@v1.3
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
-        with:
-          ssm-path: /${{ env.BUILD_STAGE }}/${{ env.BUILD_APP }}/test
-          prefix: null
-          decryption: true
+      # - name: Get environment variable from aws ssm
+      #   uses: Bardavon-Health/actions-aws-ssm-params-to-env@v1.3
+      #   env:
+      #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      #     AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+      #   with:
+      #     ssm-path: /${{ env.BUILD_STAGE }}/${{ env.BUILD_APP }}/test
+      #     prefix: null
+      #     decryption: true
           
       # - name: Output Bardavon Actions
       #   env:
@@ -97,47 +106,47 @@ jobs:
       #   with:
       #     name: env-file
       #     path: .env
-      - name: Install Python 3.9
-        if: ${{ inputs.app-name != 'merchant-portal' }}
-        uses: actions/setup-python@v5
-        with:
-          python-version: 3.9
+      # - name: Install Python 3.9
+      #   if: ${{ inputs.app-name != 'merchant-portal' }}
+      #   uses: actions/setup-python@v5
+      #   with:
+      #     python-version: 3.9
 
-      - name: Install EB CLI using pip
-        run: |
-          python -m pip install --upgrade pip
-          pip install awsebcli
+      # - name: Install EB CLI using pip
+      #   run: |
+      #     python -m pip install --upgrade pip
+      #     pip install awsebcli
 
-      - name: Initialize EB CLI
-        if: ${{ inputs.app-name != 'merchant-portal' }}
-        run: |
-          eb init ${{ env.AWS_EBS_APPLICATION }} --region ${{ env.AWS_DEFAULT_REGION }} --platform ${{ env.AWS_EBS_PLATFORM }}
+      # - name: Initialize EB CLI
+      #   if: ${{ inputs.app-name != 'merchant-portal' }}
+      #   run: |
+      #     eb init ${{ env.AWS_EBS_APPLICATION }} --region ${{ env.AWS_DEFAULT_REGION }} --platform ${{ env.AWS_EBS_PLATFORM }}
 
-      - name: list
-        shell: bash
-        run: ls
+      # - name: list
+      #   shell: bash
+      #   run: ls
         
-      - name: Get Elastic Beanstalk blue environment name
-        id: target-blue-env
-        shell: bash
-        run: |
-          ebs_envs=$(eb list --all | awk '{if ($1 == "*") print $2; else print $1}')
-          echo "$ebs_envs"
-          echo "ebs_envs"
-          for ebs_env in $ebs_envs; do
-            ebs_env_cname=$(eb status $ebs_env | grep "CNAME:" | awk '{print $2}')
-            echo "$ebs_env_cname"
-            [ "$ebs_env_cname" = 'staging-5.ap-southeast-1.elasticbeanstalk.com' ] && blue_env_name="$ebs_env"
-          done
+      # - name: Get Elastic Beanstalk blue environment name
+      #   id: target-blue-env
+      #   shell: bash
+      #   run: |
+      #     ebs_envs=$(eb list --all | awk '{if ($1 == "*") print $2; else print $1}')
+      #     echo "$ebs_envs"
+      #     echo "ebs_envs"
+      #     for ebs_env in $ebs_envs; do
+      #       ebs_env_cname=$(eb status $ebs_env | grep "CNAME:" | awk '{print $2}')
+      #       echo "$ebs_env_cname"
+      #       [ "$ebs_env_cname" = 'staging-5.ap-southeast-1.elasticbeanstalk.com' ] && blue_env_name="$ebs_env"
+      #     done
 
-          echo "$blue_env_name"
-          echo "blue_env_name=$blue_env_name" >> $GITHUB_OUTPUT
-          if [ -n "$blue_env_name" ]; then
-            echo "Blue environment found: $blue_env_name"
-          else
-            echo "Elastic Beanstalk blue environment for: not found"
-            exit 1
-          fi
+      #     echo "$blue_env_name"
+      #     echo "blue_env_name=$blue_env_name" >> $GITHUB_OUTPUT
+      #     if [ -n "$blue_env_name" ]; then
+      #       echo "Blue environment found: $blue_env_name"
+      #     else
+      #       echo "Elastic Beanstalk blue environment for: not found"
+      #       exit 1
+      #     fi
 
 
 
