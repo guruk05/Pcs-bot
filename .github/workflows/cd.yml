@@ -30,7 +30,9 @@ jobs:
           username: ${{ secrets.HOST }}
           key: ${{ secrets.KEY }}
           port: 22
-          script: whoami
+          script: |
+              whoami
+              ls -al
 
       # - name: Set up AWS CLI
       #   uses: aws-actions/configure-aws-credentials@v1
