@@ -1,0 +1,20 @@
+version: 1
+
+merge:
+  trigger:
+    labels: ['automerge']
+    auto_merge: true
+  ignore:
+    labels: ['do not merge']
+  method: squash
+  options:
+    squash:
+      title: pull_request_title
+  delete_after_merge: true
+  allow_merge_with_no_checks: true
+update:
+  trigger:
+    labels: ['wip', 'waiting approval']
+  ignore:
+    labels: ['do not update']
+  ignore_drafts: true
