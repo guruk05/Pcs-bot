@@ -19,4 +19,8 @@ jobs:
       
           echo "Netbird DNS: $NETBIRD_DNS"
           echo "Running: docker run --dns=$NETBIRD_DNS ..."
+
+          docker run --rm \
+          --dns="$NETBIRD_DNS" \
+          busybox nslookup google.com || true
         shell: bash
