@@ -14,7 +14,9 @@ jobs:
       - name: Set custom /etc/resolv.conf for NetBird
         run: |
           echo "Creating /etc/resolv.conf with NetBird DNS..."
+      
           NETBIRD_DNS=100.84.103.215
-          echo "Netbird DNS: \$NETBIRD_DNS"
-          echo "Running: docker run --dns=\$NETBIRD_DNS ..."
+      
+          echo "Netbird DNS: $NETBIRD_DNS"
+          echo "Running: docker run --dns=$NETBIRD_DNS ..."
         shell: bash
