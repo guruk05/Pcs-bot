@@ -9,7 +9,7 @@ on:
 
 jobs:
   validate-pr:
-    runs-on: ubuntu-latest
+    runs-on: arc-runner-set-test
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
