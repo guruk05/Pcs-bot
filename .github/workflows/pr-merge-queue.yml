@@ -1,8 +1,11 @@
 name: Validate code
 
 on:
-  merge_group:
+  workflow_dispatch:
+  push:
+    branches: [main]
   pull_request:
+    branches: [main]
 
 jobs:
   validate-pr:
