@@ -1,15 +1,12 @@
 name: Validate code
 
 on:
-  workflow_dispatch:
-  push:
-    branches: [main]
+  merge_group:
   pull_request:
-    branches: [main]
 
 jobs:
   validate-pr:
-    runs-on: arc-runner-set-test
+    runs-on: ubuntu-latest
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
@@ -19,4 +16,4 @@ jobs:
         tree -a -I '.git'
         git status
     - name: Run slow CI (emulated by a long sleep)
-      run: sleep 22
+      run: sleep 300
