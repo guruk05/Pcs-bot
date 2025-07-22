@@ -1,0 +1,20 @@
+name: precheck
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  precheck:
+    runs-on: ubuntu-latest
+    if: (contains(github.event.comment.body, '/mq') && github.event.issue.pull_request != null)
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    steps:
+      - uses: yamachu/merge-queue-action/precheck@v1
+        with:
+          required-codeowners: "true"
+        id: precheck
+      - name: Set base branch
+        run: echo "base-branch=${{ steps.precheck.outputs.base-branch }}" >> $GITHUB_ENV
