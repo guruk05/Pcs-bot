@@ -1,0 +1,75 @@
+name: Auto Enqueue PR to Merge Queue
+
+on:
+  pull_request:
+    types: [labeled, synchronize]
+
+jobs:
+  auto-enqueue:
+    if: github.event.pull_request.state == 'open'
+    runs-on: ubuntu-latest
+
+    permissions:
+      pull-requests: write
+      contents: read
+
+    steps:
+      - name: Check label and SonarQube status
+        id: check
+        uses: actions/github-script@v7
+        with:
+          result-encoding: string
+          script: |
+            const pr = context.payload.pull_request;
+            const prNumber = pr.number;
+            const prSha = pr.head.sha;
+
+            const hasLabel = pr.labels.some(label => label.name === 'merge-when-ready');
+            if (!hasLabel) {
+              core.setFailed("❌ PR does not have the 'merge-when-ready' label.");
+              return;
+            }
+
+            const { data: checks } = await github.rest.checks.listForRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: prSha
+            });
+
+            const sonarCheck = checks.check_runs.find(run => run.name === 'validate-pr');
+            if (!sonarCheck || sonarCheck.conclusion !== 'success') {
+              core.setFailed("❌ 'validate-pr' (SonarQube) check has not passed.");
+              return;
+            }
+
+            return prNumber;
+
+      - name: Upgrade GitHub CLI
+        run: |
+          GH_CLI_DEB=gh_2.50.0_linux_amd64.deb
+          curl -LO https://github.com/cli/cli/releases/download/v2.50.0/$GH_CLI_DEB
+          sudo dpkg -i $GH_CLI_DEB
+          gh --version
+      
+      - name: Check GH CLI version
+        run: gh --version
+      
+      - name: Enqueue PR via gh CLI
+        if: success()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+              gh pr queue ${{ steps.check.outputs.prNumber }} --repo ${{ github.repository }}
+      
+      - name: Comment on PR
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = context.payload.pull_request.number;
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body: "✅ This PR passed `validate-pr` and has the `merge-when-ready` label. It has been **added to the merge queue** via `gh pr merge`."
+            });
